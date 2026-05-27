@@ -1,0 +1,41 @@
+{% extends "layout_dash.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:72rem;margin:0 auto">
+  <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.5rem;color:#fff;margin-bottom:1.5rem">⚙️ Admin Dashboard</h1>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:1rem;margin-bottom:2rem">
+    {% for icon,label,value,color in [
+      ('👥','Total Users', user_count, '#3355ff'),
+      ('🎓','Students', student_count, '#7c3aed'),
+      ('💼','Alumni', alumni_count, '#10b981'),
+      ('📬','Requests', req_count, '#f59e0b'),
+    ] %}
+    <div class="card" style="padding:1.25rem;border-color:{{ color }}33">
+      <div style="font-size:1.5rem;margin-bottom:.5rem">{{ icon }}</div>
+      <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.75rem;color:#fff">{{ value }}</p>
+      <p style="font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em">{{ label }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  <h2 style="font-family:'Space Grotesk',sans-serif;font-size:.75rem;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem">Recent Users</h2>
+  <div class="card" style="overflow:hidden">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="border-bottom:1px solid #172040">
+        {% for h in ['Name','Email','Role','Joined'] %}
+        <th style="padding:.875rem 1rem;text-align:left;font-family:'Space Grotesk',sans-serif;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em">{{ h }}</th>
+        {% endfor %}
+      </tr></thead>
+      <tbody>
+        {% for u in recent_users %}
+        <tr style="border-bottom:1px solid #111d35;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.02)'" onmouseout="this.style.background=''">
+          <td style="padding:.875rem 1rem;font-size:.875rem;color:#fff">{{ u.name }}</td>
+          <td style="padding:.875rem 1rem;font-size:.875rem;color:#64748b">{{ u.email }}</td>
+          <td style="padding:.875rem 1rem"><span class="badge {% if u.role=='student' %}badge-brand{% elif u.role=='alumni' %}badge-green{% else %}badge-amber{% endif %}">{{ u.role }}</span></td>
+          <td style="padding:.875rem 1rem;font-size:.75rem;color:#475569">{{ u.created_at.strftime('%b %d, %Y') if u.created_at else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

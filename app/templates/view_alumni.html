@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ alumni.name }} – AI CareerVerse{% endblock %}
+{% block content %}
+
+<div class="mb-3">
+  <a href="{{ url_for('student.search') }}" style="color:var(--text2);font-size:.85rem"><i class="fas fa-arrow-left me-1"></i>Back to Search</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card p-4 text-center mb-3">
+      <div class="av av-xl av-a mx-auto mb-3">{{ alumni.name[0].upper() }}</div>
+      <h3 style="font-weight:800">{{ alumni.name }}</h3>
+      {% if alumni.job_role %}<div style="color:var(--text2);font-size:.9rem">{{ alumni.job_role }}</div>{% endif %}
+      {% if alumni.company %}<div style="color:var(--accent);font-weight:700;font-size:.95rem">@ {{ alumni.company }}</div>{% endif %}
+      {% if alumni.location %}<div style="color:var(--muted);font-size:.83rem;margin-top:.25rem"><i class="fas fa-location-dot me-1"></i>{{ alumni.location }}</div>{% endif %}
+      <hr style="border-color:var(--border);margin:1rem 0">
+      <div class="d-flex gap-2 justify-content-center">
+        {% if alumni.linkedin %}
+        <a href="{{ alumni.linkedin }}" target="_blank" class="btn btn-ghost btn-sm"><i class="fab fa-linkedin-in me-1"></i>LinkedIn</a>
+        {% endif %}
+        <a href="mailto:{{ alumni.email }}" class="btn btn-ghost btn-sm"><i class="fas fa-envelope me-1"></i>Email</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card p-4 mb-3">
+      <div class="sec-head" style="font-size:1rem;margin-bottom:.85rem">About</div>
+      <p style="color:var(--text2);font-size:.9rem;line-height:1.65;margin:0">
+        {{ alumni.bio or 'This alumni has not added a bio yet.' }}
+      </p>
+    </div>
+    {% if alumni.skills %}
+    <div class="card p-4 mb-3">
+      <div class="sec-head" style="font-size:1rem;margin-bottom:.85rem">Skills & Expertise</div>
+      {% for sk in alumni.skills.split(',') %}
+      <span class="skill-tag" style="font-size:.82rem">{{ sk.strip() }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary flex-fill" data-bs-toggle="modal" data-bs-target="#reqModal">
+        <i class="fas fa-paper-plane me-2"></i>Request Mentorship
+      </button>
+      <button class="btn btn-ghost px-3" onclick="askAI('Tell me about career paths for someone working at {{ alumni.company }} as a {{ alumni.job_role }}')">
+        <i class="fas fa-robot me-1"></i>Ask AI
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="reqModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" style="font-weight:800">Request Mentorship from {{ alumni.name }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{{ url_for('student.request_mentor', alumni_id=alumni.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <label class="form-label">Your message</label>
+          <textarea class="form-control mb-3" name="message" rows="4"
+            placeholder="Hi {{ alumni.name.split()[0] }}! I'm impressed by your journey at {{ alumni.company }}. I'd love to connect and learn about…"></textarea>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-ghost flex-fill" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary flex-fill"><i class="fas fa-paper-plane me-2"></i>Send Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

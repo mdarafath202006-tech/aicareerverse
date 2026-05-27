@@ -1,0 +1,112 @@
+{% extends "layout_dash.html" %}
+{% block title %}AI Mentor Recommendations{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:80rem;margin:0 auto">
+  <div style="margin-bottom:1.5rem">
+    <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.5rem;color:#fff">🤖 AI Mentor Recommendations</h1>
+    <p style="color:#64748b;font-size:.875rem;margin-top:.25rem">Ranked by semantic similarity · skill overlap · industry alignment</p>
+  </div>
+  <!-- AI info banner -->
+  <div style="display:flex;align-items:start;gap:.75rem;padding:1rem;border-radius:.875rem;background:rgba(51,85,255,.06);border:1px solid rgba(51,85,255,.2);margin-bottom:1.5rem">
+    <span style="font-size:1.25rem;flex-shrink:0">✨</span>
+    <div>
+      <p style="font-family:'Space Grotesk',sans-serif;font-weight:500;color:#90aeff;font-size:.875rem">Semantic AI Matching Active</p>
+      <p style="font-size:.75rem;color:#64748b;margin-top:.25rem">Using sentence embeddings to match your skills with alumni expertise — not just keywords.</p>
+    </div>
+  </div>
+
+  {% if not student.get('skills') and not student.get('interests') %}
+  <div style="padding:3rem;text-align:center" class="card">
+    <p style="font-size:3rem;margin-bottom:1rem">👤</p>
+    <p style="color:#94a3b8;font-size:.875rem">Add your skills and interests in your <a href="/student/profile" style="color:#90aeff;text-decoration:none">profile</a> to get personalized recommendations.</p>
+  </div>
+  {% else %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(18rem,1fr));gap:1.25rem">
+    {% for rec in ranked %}
+    {% set a = rec.alumni %}
+    <div class="card" style="padding:1.25rem;transition:all .3s" onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='rgba(51,85,255,.4)'" onmouseout="this.style.transform='';this.style.borderColor=''">
+      <!-- Header -->
+      <div style="display:flex;align-items:start;gap:.875rem;margin-bottom:1rem">
+        <div style="width:3rem;height:3rem;border-radius:.875rem;background:linear-gradient(135deg,#3355ff,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.125rem;flex-shrink:0">
+          {{ a.name[0].upper() if a.name else '?' }}
+        </div>
+        <div style="flex:1;min-width:0">
+          <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:#fff;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name or 'Alumni' }}</h3>
+          <p style="font-size:.75rem;color:#64748b;margin-top:.125rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.job_role or '' }}{% if a.company %} @ {{ a.company }}{% endif %}</p>
+        </div>
+        {% if rec.percent > 0 %}
+        <div style="flex-shrink:0;text-align:center;padding:.5rem .75rem;border-radius:.75rem;background:{% if rec.percent >= 70 %}rgba(16,185,129,.1){% elif rec.percent >= 40 %}rgba(245,158,11,.1){% else %}rgba(244,63,94,.1){% endif %};border:1px solid {% if rec.percent >= 70 %}rgba(16,185,129,.2){% elif rec.percent >= 40 %}rgba(245,158,11,.2){% else %}rgba(244,63,94,.2){% endif %}">
+          <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.875rem;color:{% if rec.percent >= 70 %}#6ee7b7{% elif rec.percent >= 40 %}#fcd34d{% else %}#fda4af{% endif %}">{{ rec.percent }}%</p>
+          <p style="font-size:.625rem;color:#475569">match</p>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if a.location %}
+      <p style="font-size:.75rem;color:#475569;margin-bottom:.75rem">📍 {{ a.location }}</p>
+      {% endif %}
+
+      <!-- Matched skills -->
+      {% if rec.matched_skills %}
+      <div style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:.75rem">
+        {% for sk in rec.matched_skills[:4] %}<span class="badge badge-brand">{{ sk }}</span>{% endfor %}
+        {% if rec.matched_skills|length > 4 %}<span class="badge badge-brand">+{{ rec.matched_skills|length - 4 }}</span>{% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Progress -->
+      {% if rec.percent > 0 %}
+      <div class="progress-bar" style="margin-bottom:.75rem">
+        <div class="progress-fill" style="width:{{ rec.percent }}%"></div>
+      </div>
+      {% endif %}
+
+      <!-- Hiring badge -->
+      {% if a.is_hiring %}<span class="badge badge-green" style="margin-bottom:.75rem">🚀 Hiring Now</span>{% endif %}
+
+      <!-- Actions -->
+      <div style="display:flex;gap:.5rem">
+        {% if a.linkedin %}
+        <a href="{{ a.linkedin }}" target="_blank" style="display:inline-flex;align-items:center;gap:.375rem;padding:.5rem .875rem;border-radius:.625rem;background:#172040;border:1px solid #1e2850;color:#94a3b8;font-size:.75rem;text-decoration:none;font-family:'Space Grotesk',sans-serif;transition:all .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">🔗 LinkedIn</a>
+        {% endif %}
+        <button onclick="openModal({{ a.id }}, '{{ a.name or 'this mentor' }}')" class="btn-primary" style="flex:1;justify-content:center;font-size:.75rem;padding:.5rem">Request Mentor</button>
+      </div>
+    </div>
+    {% else %}
+    <div style="grid-column:1/-1;padding:3rem;text-align:center" class="card">
+      <p style="font-size:3rem;margin-bottom:1rem">🔍</p>
+      <p style="color:#94a3b8">No recommendations found. Update your profile with more skills.</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Request modal -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;padding:1rem">
+  <div class="card" style="width:100%;max-width:26rem;padding:1.5rem">
+    <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;margin-bottom:.25rem">Request Mentorship</h3>
+    <p style="font-size:.875rem;color:#64748b;margin-bottom:1rem">Sending to <span id="modal-name" style="color:#90aeff"></span></p>
+    <form id="modal-form" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+      <textarea name="message" class="input" style="height:7rem;resize:none;margin-bottom:.5rem" placeholder="Introduce yourself and explain what you hope to learn..." maxlength="500"></textarea>
+      <p id="char-count" style="font-size:.7rem;color:#334155;text-align:right;margin-bottom:1rem">0/500</p>
+      <div style="display:flex;gap:.75rem">
+        <button type="button" onclick="closeModal()" class="btn-secondary" style="flex:1;justify-content:center">Cancel</button>
+        <button type="submit" class="btn-primary" style="flex:1;justify-content:center">Send Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function openModal(id, name){
+  document.getElementById('modal').style.display='flex';
+  document.getElementById('modal-name').textContent=name;
+  document.getElementById('modal-form').action='/student/request_mentor/'+id;
+}
+function closeModal(){ document.getElementById('modal').style.display='none'; }
+document.querySelector('[name="message"]')?.addEventListener('input',function(){
+  document.getElementById('char-count').textContent=this.value.length+'/500';
+});
+</script>
+{% endblock %}

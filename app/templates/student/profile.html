@@ -1,0 +1,44 @@
+{% extends "layout_dash.html" %}
+{% block title %}My Profile — Student{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:40rem;margin:0 auto">
+  <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.5rem;color:#fff;margin-bottom:1.5rem">👤 My Profile</h1>
+  <div class="card" style="padding:1.5rem">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid #172040">
+      <div style="width:4rem;height:4rem;border-radius:1rem;background:linear-gradient(135deg,#3355ff,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.5rem;box-shadow:0 0 20px rgba(51,85,255,.4)">
+        {{ session.get('name','U')[0].upper() }}
+      </div>
+      <div>
+        <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;font-size:1.125rem">{{ session.get('name','') }}</p>
+        <p style="font-size:.875rem;color:#64748b">Student</p>
+      </div>
+    </div>
+    <form method="POST" action="/student/profile">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+      <div style="margin-bottom:1rem">
+        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Skills <span style="text-transform:none;letter-spacing:0;color:#334155">(comma separated)</span></label>
+        <textarea name="skills" class="input" style="height:5rem;resize:none" placeholder="Python, React, Machine Learning, SQL...">{{ profile.get('skills','') }}</textarea>
+      </div>
+      <div style="margin-bottom:1rem">
+        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Interests</label>
+        <textarea name="interests" class="input" style="height:5rem;resize:none" placeholder="AI, Web Development, Data Science...">{{ profile.get('interests','') }}</textarea>
+      </div>
+      <div style="margin-bottom:1rem">
+        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Bio</label>
+        <textarea name="bio" class="input" style="height:7rem;resize:none" placeholder="Tell mentors about yourself..." maxlength="1000">{{ profile.get('bio','') }}</textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem">
+        <div>
+          <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">GitHub URL</label>
+          <input type="url" name="github_url" class="input" placeholder="https://github.com/..." value="{{ profile.get('github_url','') }}"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">LinkedIn URL</label>
+          <input type="url" name="linkedin_url" class="input" placeholder="https://linkedin.com/in/..." value="{{ profile.get('linkedin_url','') }}"/>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:.875rem">💾 Save Profile</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
