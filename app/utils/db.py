@@ -1,19 +1,13 @@
 """
-app/utils/db.py – Thin database helper.
-Uses environment-driven config; never hardcodes credentials.
+app/utils/db.py
+PostgreSQL connection helper
 """
-import mysql.connector
-from flask import current_app
+
+import psycopg2
+import os
 
 
 def get_db():
-    """Return a new MySQL connection using app config."""
-    cfg = current_app.config
-    return mysql.connector.connect(
-        host=cfg["DB_HOST"],
-        user=cfg["DB_USER"],
-        password=cfg["DB_PASSWORD"],
-        database=cfg["DB_NAME"],
-        charset="utf8mb4",
-        autocommit=False,
+    return psycopg2.connect(
+        os.getenv("DATABASE_URL")
     )
