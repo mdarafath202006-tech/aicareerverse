@@ -1,0 +1,82 @@
+{% extends "layout_dash.html" %}
+{% block title %}Communities — AI CareerVerse{% endblock %}
+{% block page_title %}Communities{% endblock %}
+{% block content %}
+<div style="padding:1.75rem;max-width:80rem;margin:0 auto">
+  <div style="margin-bottom:2rem">
+    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:.3rem">
+      🌐 Communities
+    </h1>
+    <p style="color:var(--text-lo);font-size:.875rem">Join communities of students and alumni with the same career interests</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(18rem,1fr));gap:1.25rem">
+    {% for comm in communities %}
+    <div class="card" style="padding:1.5rem;transition:all .3s;animation:fadeUp .35s ease {{ loop.index*.05 }}s both"
+      onmouseover="this.style.borderColor='rgba(26,82,255,.35)';this.style.transform='translateY(-3px)'"
+      onmouseout="this.style.borderColor='';this.style.transform=''">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:1rem">
+        <div style="display:flex;align-items:center;gap:.875rem">
+          <div style="width:3rem;height:3rem;border-radius:1rem;
+            background:linear-gradient(135deg,rgba(26,82,255,.2),rgba(139,92,246,.15));
+            display:flex;align-items:center;justify-content:center;font-size:1.375rem">
+            {{ comm.icon or '🌐' }}
+          </div>
+          <div>
+            <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.9rem">{{ comm.name }}</h3>
+            <p style="font-size:.75rem;color:var(--text-lo);margin-top:.1rem">
+              {{ comm.member_count or 0 }} members
+            </p>
+          </div>
+        </div>
+        {% if comm.id in joined_ids %}
+        <span class="badge badge-emerald" style="font-size:.65rem;flex-shrink:0">✓ Joined</span>
+        {% endif %}
+      </div>
+
+      {% if comm.description %}
+      <p style="font-size:.82rem;color:var(--text-lo);line-height:1.6;margin-bottom:1.25rem;
+        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+        {{ comm.description }}
+      </p>
+      {% endif %}
+
+      <!-- Stats row -->
+      <div style="display:flex;gap:1.25rem;margin-bottom:1.25rem">
+        <div>
+          <p style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#f1f5f9">{{ comm.member_count or 0 }}</p>
+          <p style="font-size:.68rem;color:var(--text-lo);text-transform:uppercase;letter-spacing:.06em">Members</p>
+        </div>
+        <div>
+          <p style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#f1f5f9">{{ comm.post_count or 0 }}</p>
+          <p style="font-size:.68rem;color:var(--text-lo);text-transform:uppercase;letter-spacing:.06em">Posts</p>
+        </div>
+      </div>
+
+      <!-- Action -->
+      {% if comm.id in joined_ids %}
+      <form method="POST" action="/communities/leave/{{ comm.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+        <button type="submit" class="btn btn-ghost btn-sm" style="width:100%">Leave Community</button>
+      </form>
+      {% else %}
+      <form method="POST" action="/communities/join/{{ comm.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+        <button type="submit" class="btn btn-primary btn-sm" style="width:100%">Join Community</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if not communities %}
+  <div class="card" style="padding:4rem;text-align:center">
+    <p style="font-size:2.5rem;margin-bottom:1rem">🌐</p>
+    <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:.5rem">No communities yet</h3>
+    <p style="color:var(--text-lo);font-size:.875rem">Communities will be created once the platform is seeded.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

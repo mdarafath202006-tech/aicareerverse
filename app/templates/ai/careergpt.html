@@ -1,0 +1,130 @@
+{% extends "layout_dash.html" %}
+{% block title %}CareerGPT — AI CareerVerse{% endblock %}
+{% block content %}
+<div style="display:flex;flex-direction:column;height:calc(100vh - 0px);max-width:760px;margin:0 auto;padding:1.25rem">
+  <div style="margin-bottom:1rem">
+    <h1 style="font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;color:#f1f5f9;display:flex;align-items:center;gap:.5rem">
+      <span style="width:2rem;height:2rem;border-radius:.5rem;background:linear-gradient(135deg,#1a52ff,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:.875rem">🤖</span>
+      CareerGPT
+    </h1>
+    <p style="font-size:.8rem;color:var(--text-mid)">Your AI career assistant — resume, interviews, jobs, mentors, everything.</p>
+  </div>
+  <!-- Chat messages -->
+  <div id="chat-messages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.875rem;padding:.5rem 0;margin-bottom:1rem">
+    <div style="display:flex;gap:.75rem;align-items:start">
+      <div style="width:2rem;height:2rem;border-radius:.5rem;background:linear-gradient(135deg,#1a52ff,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem">🤖</div>
+      <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;border-top-left-radius:.25rem;padding:.875rem 1rem;max-width:80%">
+        <p style="color:#f1f5f9;font-size:.875rem;line-height:1.6">Hi! I'm CareerGPT 👋 I'm here to help you with your career journey. Ask me anything about:</p>
+        <ul style="margin-top:.5rem;color:var(--text-mid);font-size:.82rem;padding-left:1rem;display:flex;flex-direction:column;gap:.2rem">
+          <li>Resume review & improvements</li>
+          <li>Interview preparation</li>
+          <li>Job search strategy</li>
+          <li>Skill gap analysis</li>
+          <li>Career roadmap planning</li>
+          <li>Mentor recommendations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- Quick prompts -->
+  <div id="quick-prompts" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem">
+    <button onclick="sendQuick('Review my resume for a software engineering role')" style="font-size:.75rem;padding:.35rem .75rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:2rem;color:var(--text-mid);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='rgba(26,82,255,.5)';this.style.color='#4d7bff'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-mid)'">📄 Resume Review</button>
+    <button onclick="sendQuick('Help me prepare for a technical interview at a product company')" style="font-size:.75rem;padding:.35rem .75rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:2rem;color:var(--text-mid);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='rgba(26,82,255,.5)';this.style.color='#4d7bff'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-mid)'">💬 Interview Prep</button>
+    <button onclick="sendQuick('What skills should I learn to become a Data Scientist?')" style="font-size:.75rem;padding:.35rem .75rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:2rem;color:var(--text-mid);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='rgba(26,82,255,.5)';this.style.color='#4d7bff'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-mid)'">📊 Skill Gap</button>
+    <button onclick="sendQuick('Create a 6-month career roadmap for becoming a full-stack developer')" style="font-size:.75rem;padding:.35rem .75rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:2rem;color:var(--text-mid);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='rgba(26,82,255,.5)';this.style.color='#4d7bff'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-mid)'">🗺️ Career Roadmap</button>
+  </div>
+  <!-- Input -->
+  <div style="display:flex;gap:.75rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:.625rem .875rem">
+    <input type="text" id="msg-input" placeholder="Ask CareerGPT anything about your career..."
+      style="flex:1;background:transparent;border:none;outline:none;color:#f1f5f9;font-size:.9rem"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"/>
+    <button id="send-btn" onclick="sendMessage()" style="background:linear-gradient(135deg,#1a52ff,#8b5cf6);color:#fff;border:none;padding:.5rem 1rem;border-radius:.625rem;font-size:.82rem;font-weight:600;cursor:pointer;flex-shrink:0;transition:opacity .2s">
+      Send ↑
+    </button>
+  </div>
+</div>
+
+<script>
+let history = [];
+const chatEl = document.getElementById('chat-messages');
+const inputEl = document.getElementById('msg-input');
+const sendBtn = document.getElementById('send-btn');
+
+function addMessage(role, content) {
+  const isUser = role === 'user';
+  const div = document.createElement('div');
+  div.style.cssText = `display:flex;gap:.75rem;align-items:start;${isUser ? 'flex-direction:row-reverse' : ''}`;
+  div.innerHTML = `
+    <div style="width:2rem;height:2rem;border-radius:${isUser ? '50%' : '.5rem'};
+      background:${isUser ? 'linear-gradient(135deg,#00e5ff,#1a52ff)' : 'linear-gradient(135deg,#1a52ff,#8b5cf6)'};
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.75rem;font-weight:700;color:#fff">
+      ${isUser ? '{{ session.get("name","U")[0].upper() }}' : '🤖'}
+    </div>
+    <div style="background:${isUser ? 'linear-gradient(135deg,rgba(26,82,255,.25),rgba(139,92,246,.2))' : 'var(--bg-surface)'};
+      border:1px solid ${isUser ? 'rgba(26,82,255,.4)' : 'var(--border)'};
+      border-radius:1rem;${isUser ? 'border-top-right-radius:.25rem' : 'border-top-left-radius:.25rem'};
+      padding:.875rem 1rem;max-width:80%">
+      <p style="color:#f1f5f9;font-size:.875rem;line-height:1.7;white-space:pre-wrap">${escapeHtml(content)}</p>
+    </div>`;
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function addTyping() {
+  const div = document.createElement('div');
+  div.id = 'typing-indicator';
+  div.style.cssText = 'display:flex;gap:.75rem;align-items:center';
+  div.innerHTML = `
+    <div style="width:2rem;height:2rem;border-radius:.5rem;background:linear-gradient(135deg,#1a52ff,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0">🤖</div>
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;border-top-left-radius:.25rem;padding:.75rem 1rem">
+      <div style="display:flex;gap:.3rem;align-items:center">
+        <div style="width:.4rem;height:.4rem;border-radius:50%;background:#475569;animation:pulse 1s infinite"></div>
+        <div style="width:.4rem;height:.4rem;border-radius:50%;background:#475569;animation:pulse 1s .2s infinite"></div>
+        <div style="width:.4rem;height:.4rem;border-radius:50%;background:#475569;animation:pulse 1s .4s infinite"></div>
+      </div>
+    </div>`;
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function sendMessage() {
+  const msg = inputEl.value.trim();
+  if (!msg) return;
+  inputEl.value = '';
+  document.getElementById('quick-prompts').style.display = 'none';
+  addMessage('user', msg);
+  history.push({role: 'user', content: msg});
+  sendBtn.disabled = true;
+  addTyping();
+  try {
+    const resp = await fetch('/ai/careergpt/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: msg, history: history.slice(-10)})
+    });
+    const data = await resp.json();
+    document.getElementById('typing-indicator')?.remove();
+    const reply = data.reply || 'Sorry, something went wrong.';
+    addMessage('assistant', reply);
+    history.push({role: 'assistant', content: reply});
+  } catch(e) {
+    document.getElementById('typing-indicator')?.remove();
+    addMessage('assistant', 'Connection error. Please try again.');
+  }
+  sendBtn.disabled = false;
+  inputEl.focus();
+}
+
+function sendQuick(text) {
+  inputEl.value = text;
+  sendMessage();
+}
+</script>
+<style>
+@keyframes pulse { 0%,100% { opacity:.3 } 50% { opacity:1 } }
+</style>
+{% endblock %}

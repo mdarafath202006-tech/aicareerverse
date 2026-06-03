@@ -1,0 +1,37 @@
+{% extends "layout_dash.html" %}
+{% block title %}AI Tools — AI CareerVerse{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:1000px;margin:0 auto">
+  <div style="text-align:center;padding:2rem 0 2.5rem">
+    <div style="display:inline-flex;align-items:center;gap:.625rem;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);color:#8b5cf6;padding:.4rem 1rem;border-radius:2rem;font-size:.78rem;font-weight:600;margin-bottom:1rem">
+      ✨ AI-Powered Career Intelligence
+    </div>
+    <h1 style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#f1f5f9;margin-bottom:.75rem">Your AI Career Toolkit</h1>
+    <p style="color:var(--text-mid);font-size:.95rem;max-width:550px;margin:0 auto">Every tool you need to get hired, grow professionally, and stay ahead of the curve — all powered by AI.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+    {% set tools = [
+      ('/ai/careergpt', '🤖', 'CareerGPT', 'Your always-on AI career advisor. Ask anything about resumes, interviews, salary negotiation, or career choices.', 'linear-gradient(135deg,#1a52ff,#8b5cf6)', 'Chat Now →'),
+      ('/ai/resume-analyzer', '🔍', 'Resume Analyzer', 'Get your ATS score, identify missing keywords, and receive AI-powered suggestions to make your resume stand out.', 'linear-gradient(135deg,#8b5cf6,#fb7185)', 'Analyze Resume →'),
+      ('/ai/resume-builder', '📝', 'Resume Builder', 'Generate a polished, ATS-optimized resume in seconds. Just fill in your details — AI does the writing.', 'linear-gradient(135deg,#00e5ff,#1a52ff)', 'Build Resume →'),
+      ('/ai/job-match', '⚡', 'Job Match Engine', 'See exactly how you match each job. Get gap analysis, preparation tips, and apply with confidence.', 'linear-gradient(135deg,#fbbf24,#fb7185)', 'Match Jobs →'),
+      ('/ai/skill-gap', '🎯', 'Skill Gap Analyzer', 'Enter your dream role — AI identifies what you\'re missing and builds a personalized learning path.', 'linear-gradient(135deg,#00d68f,#00e5ff)', 'Analyze Gaps →'),
+      ('/ai/career-roadmap', '🗺️', 'Career Roadmap', 'Get a phase-by-phase roadmap with daily habits, weekly goals, projects, and certifications to hit your target role.', 'linear-gradient(135deg,#8b5cf6,#fbbf24)', 'Build Roadmap →'),
+      ('/ai/interview-coach', '🎙️', 'Interview Coach', 'Practice real interview questions, get your answers evaluated, and build the confidence to ace any interview.', 'linear-gradient(135deg,#fb7185,#fbbf24)', 'Start Practice →'),
+    ] %}
+    {% for url, icon, title, desc, gradient, cta in tools %}
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;transition:all .25s;position:relative;overflow:hidden"
+      onmouseover="this.style.borderColor='rgba(26,82,255,.5)';this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(0,0,0,.4)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow=''">
+      <div style="position:absolute;top:0;right:0;width:120px;height:120px;border-radius:50%;background:{{ gradient }};opacity:.06;transform:translate(30px,-30px)"></div>
+      <div style="width:3rem;height:3rem;border-radius:.875rem;background:{{ gradient }};display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:1rem">{{ icon }}</div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#f1f5f9;margin-bottom:.5rem">{{ title }}</h3>
+      <p style="color:var(--text-mid);font-size:.82rem;line-height:1.6;margin-bottom:1.25rem">{{ desc }}</p>
+      <a href="{{ url }}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:700;color:#4d7bff;text-decoration:none;transition:gap .2s"
+        onmouseover="this.style.gap='.625rem'" onmouseout="this.style.gap='.4rem'">{{ cta }}</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

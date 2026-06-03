@@ -1,0 +1,116 @@
+{% extends "layout_dash.html" %}
+{% block title %}Analytics — AI CareerVerse{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+{% block content %}
+<div style="padding:1.75rem;max-width:80rem;margin:0 auto">
+  <div style="margin-bottom:2rem">
+    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:.3rem">
+      📈 Platform Analytics
+    </h1>
+    <p style="color:var(--text-lo);font-size:.875rem">Real-time insights into the career ecosystem</p>
+  </div>
+
+  <!-- Top stats -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1rem;margin-bottom:2rem">
+    {% for icon,label,value,color,bg,change in [
+      ('👥','Total Users', stats.get('total_users','—'),'#85a8ff','rgba(26,82,255,.12)','+12%'),
+      ('🎓','Students', stats.get('students','—'),'#00e5ff','rgba(0,229,255,.1)','+8%'),
+      ('💼','Alumni', stats.get('alumni','—'),'#a78bfa','rgba(139,92,246,.12)','+15%'),
+      ('🤝','Mentorships', stats.get('mentorships','—'),'#00d68f','rgba(0,214,143,.1)','+24%'),
+      ('📝','Posts', stats.get('posts','—'),'#fbbf24','rgba(251,191,36,.1)','+31%'),
+    ] %}
+    <div class="stat-card" style="animation:fadeUp .4s ease {{ loop.index * .08 }}s both">
+      <div class="stat-icon" style="background:{{ bg }}"><span style="font-size:1rem">{{ icon }}</span></div>
+      <p class="stat-value" style="color:{{ color }}">{{ value }}</p>
+      <p class="stat-label">{{ label }}</p>
+      <p style="font-size:.7rem;color:var(--emerald);margin-top:.375rem;font-family:'Syne',sans-serif;font-weight:600">{{ change }} this month</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+
+    <!-- Top Companies -->
+    <div class="card" style="padding:1.5rem">
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.9rem;margin-bottom:1.25rem">
+        🏢 Top Hiring Companies
+      </h3>
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        {% for company,count,pct in [
+          ('Google',42,100),('Microsoft',38,90),('Amazon',35,83),
+          ('Flipkart',28,67),('Infosys',25,60),('TCS',22,52),
+        ] %}
+        <div style="display:flex;align-items:center;gap:.875rem">
+          <span style="font-size:.82rem;color:var(--text-mid);font-family:'Syne',sans-serif;font-weight:500;
+            width:6rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ company }}</span>
+          <div class="progress" style="flex:1">
+            <div class="progress-fill" style="width:{{ pct }}%"></div>
+          </div>
+          <span style="font-size:.78rem;color:#f1f5f9;font-family:'Syne',sans-serif;font-weight:700;width:2rem;text-align:right">{{ count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Top Skills -->
+    <div class="card" style="padding:1.5rem">
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.9rem;margin-bottom:1.25rem">
+        💡 Most In-Demand Skills
+      </h3>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+        {% for skill,size in [
+          ('Python',1.4),('React',1.3),('Machine Learning',1.35),('SQL',1.2),
+          ('System Design',1.25),('AWS',1.2),('Docker',1.15),('Node.js',1.1),
+          ('TypeScript',1.1),('Kubernetes',1.05),('TensorFlow',1.1),('Go',1.05),
+        ] %}
+        <span style="display:inline-flex;align-items:center;padding:.35rem .875rem;
+          border-radius:9999px;font-size:{{ size * 0.72 }}rem;
+          background:rgba(26,82,255,{{ 0.06 + loop.index * 0.01 }});
+          border:1px solid rgba(26,82,255,{{ 0.15 + loop.index * 0.015 }});
+          color:rgba(133,168,255,{{ 0.6 + loop.index * 0.04 }});
+          font-family:'Syne',sans-serif;font-weight:600">{{ skill }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Placement trends (visual using CSS bars) -->
+  <div class="card" style="padding:1.5rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.9rem">
+        📊 Monthly Activity
+      </h3>
+      <div style="display:flex;gap:1rem">
+        <div style="display:flex;align-items:center;gap:.375rem">
+          <div style="width:.75rem;height:.75rem;border-radius:2px;background:var(--brand)"></div>
+          <span style="font-size:.75rem;color:var(--text-lo)">Mentorships</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.375rem">
+          <div style="width:.75rem;height:.75rem;border-radius:2px;background:var(--cyan)"></div>
+          <span style="font-size:.75rem;color:var(--text-lo)">New Users</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:.75rem;height:10rem">
+      {% for month,m_val,u_val in [
+        ('Jan',30,45),('Feb',42,52),('Mar',38,48),('Apr',55,65),
+        ('May',72,80),('Jun',68,75),('Jul',85,90),('Aug',92,105),
+      ] %}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.375rem">
+        <div style="width:100%;display:flex;gap:3px;align-items:flex-end;height:8rem">
+          <div style="flex:1;border-radius:.25rem .25rem 0 0;
+            height:{{ (m_val / 105 * 100)|int }}%;
+            background:linear-gradient(180deg,var(--brand),rgba(26,82,255,.4));
+            transition:height .5s ease {{ loop.index * .08 }}s;min-height:4px"></div>
+          <div style="flex:1;border-radius:.25rem .25rem 0 0;
+            height:{{ (u_val / 105 * 100)|int }}%;
+            background:linear-gradient(180deg,var(--cyan),rgba(0,229,255,.3));
+            transition:height .5s ease {{ loop.index * .08 + .04 }}s;min-height:4px"></div>
+        </div>
+        <span style="font-size:.65rem;color:var(--text-lo);font-family:'Syne',sans-serif">{{ month }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

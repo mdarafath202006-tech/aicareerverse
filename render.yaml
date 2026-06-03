@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: aicareerverse-v5
+    env: python
+    buildCommand: pip install -r requirements.txt && flask db upgrade && python migrations/seed_v5.py
+    startCommand: gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:$PORT --timeout 120 run:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aicareerverse-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: aicareerverse-redis
+          type: redis
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+databases:
+  - name: aicareerverse-db
+    plan: free
+
+services:
+  - type: redis
+    name: aicareerverse-redis
+    plan: free

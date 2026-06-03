@@ -1,0 +1,154 @@
+{% extends "layout_dash.html" %}
+{% block title %}AI Mentor Matching — AI CareerVerse{% endblock %}
+{% block page_title %}AI Mentor Matching{% endblock %}
+{% block content %}
+<div style="padding:1.75rem;max-width:80rem;margin:0 auto">
+  <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:.3rem">
+        🤖 AI Mentor Matching
+      </h1>
+      <p style="color:var(--text-lo);font-size:.875rem">
+        Semantic AI-powered recommendations based on your skills & goals
+      </p>
+    </div>
+    {% if not student.get('skills') %}
+    <div style="display:flex;align-items:center;gap:.875rem;padding:.875rem 1.125rem;
+      border-radius:var(--radius-md);background:rgba(251,191,36,.06);
+      border:1px solid rgba(251,191,36,.15)">
+      <span style="font-size:1.25rem">⚠️</span>
+      <div>
+        <p style="font-family:'Syne',sans-serif;font-weight:600;color:#fbbf24;font-size:.82rem">Add your skills</p>
+        <p style="font-size:.75rem;color:#64748b">to get better AI matches</p>
+      </div>
+      <a href="/student/profile" class="btn btn-ghost btn-sm" style="text-decoration:none">Update →</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Filter bar -->
+  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <input placeholder="Filter by name, company, skill..." class="input" style="max-width:22rem"
+      id="filter-input" oninput="filterCards()"/>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      {% for tag in ['All','Hiring','Top Rated','Available'] %}
+      <button onclick="setFilter('{{ tag }}')" class="badge badge-brand"
+        style="cursor:pointer;border:none;padding:.4rem .9rem;font-size:.75rem;
+        transition:all .2s;{% if loop.first %}background:rgba(26,82,255,.25);{% endif %}">
+        {{ tag }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if ranked %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr));gap:1.25rem" id="mentor-grid">
+    {% for item in ranked %}
+    {% set a = item.alumni %}
+    <div class="mentor-card card" style="overflow:hidden;transition:all .3s"
+      onmouseover="this.style.borderColor='rgba(26,82,255,.35)';this.style.transform='translateY(-4px)'"
+      onmouseout="this.style.borderColor='';this.style.transform=''">
+
+      <!-- Card header with gradient -->
+      <div style="height:4rem;background:linear-gradient(135deg,
+        rgba(26,82,255,.2),rgba(139,92,246,.15));
+        position:relative"></div>
+
+      <!-- Avatar overlapping -->
+      <div style="padding:0 1.25rem 1.25rem;margin-top:-1.75rem">
+        <div style="display:flex;align-items:end;justify-content:space-between;margin-bottom:1rem">
+          <div class="avatar" style="width:3.5rem;height:3.5rem;font-size:1.25rem;
+            border:3px solid var(--bg-surface);
+            background:linear-gradient(135deg,rgba(26,82,255,.3),rgba(139,92,246,.2))">
+            {{ a.get('name','?')[0].upper() }}
+          </div>
+          <div style="display:flex;gap:.375rem;align-items:center;padding-top:2rem">
+            {% if a.get('is_hiring') %}
+            <span class="badge badge-emerald" style="font-size:.65rem">🟢 Hiring</span>
+            {% endif %}
+            {% if item.percent and item.percent >= 80 %}
+            <span class="badge badge-brand" style="font-size:.65rem">⚡ Top Match</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.95rem;margin-bottom:.2rem">
+          {{ a.get('name','Unknown') }}
+        </h3>
+        <p style="font-size:.8rem;color:var(--text-lo);margin-bottom:.875rem">
+          {{ a.get('job_role','') }}{% if a.get('company') %} · {{ a.get('company') }}{% endif %}
+        </p>
+
+        <!-- Match score -->
+        {% if item.percent %}
+        <div style="margin-bottom:.875rem">
+          <div style="display:flex;justify-content:space-between;margin-bottom:.375rem">
+            <span style="font-size:.72rem;color:var(--text-lo);font-family:'Syne',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.08em">Match Score</span>
+            <span style="font-size:.82rem;font-family:'Syne',sans-serif;font-weight:800;
+              color:{% if item.percent >= 80 %}var(--emerald){% elif item.percent >= 60 %}var(--amber){% else %}var(--text-mid){% endif %}">
+              {{ item.percent }}%
+            </span>
+          </div>
+          <div class="progress">
+            <div class="progress-fill" style="width:{{ item.percent }}%;
+              background:{% if item.percent >= 80 %}linear-gradient(90deg,var(--emerald),var(--cyan)){% elif item.percent >= 60 %}linear-gradient(90deg,var(--amber),var(--emerald)){% else %}linear-gradient(90deg,var(--brand),var(--violet)){% endif %}">
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Matched skills -->
+        {% if item.matched_skills %}
+        <div style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:1rem">
+          {% for sk in item.matched_skills[:4] %}
+          <span class="chip">{{ sk }}</span>
+          {% endfor %}
+          {% if item.matched_skills|length > 4 %}
+          <span class="chip" style="color:var(--brand)">+{{ item.matched_skills|length - 4 }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Bio snippet -->
+        {% if a.get('bio') %}
+        <p style="font-size:.78rem;color:var(--text-lo);line-height:1.55;margin-bottom:1rem;
+          display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+          {{ a.get('bio') }}
+        </p>
+        {% endif %}
+
+        <!-- Actions -->
+        <div style="display:flex;gap:.625rem">
+          <a href="/alumni/view/{{ a.get('alumni_id') or a.get('id') }}" class="btn btn-ghost btn-sm"
+            style="text-decoration:none;flex:1;justify-content:center">View Profile</a>
+          <form method="POST" action="/student/request_mentor/{{ a.get('alumni_id') or a.get('id') }}" style="flex:1">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+            <input type="hidden" name="message" value="Hi! I'd love to connect and learn from your experience."/>
+            <button type="submit" class="btn btn-primary btn-sm" style="width:100%">
+              Request Mentor
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="card" style="padding:4rem;text-align:center">
+    <p style="font-size:3rem;margin-bottom:1rem">🤖</p>
+    <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:.625rem">No alumni available yet</h3>
+    <p style="color:var(--text-lo);font-size:.875rem">Alumni mentors will appear here once they join the platform.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function filterCards() {
+  const q = document.getElementById('filter-input').value.toLowerCase();
+  document.querySelectorAll('.mentor-card').forEach(c => {
+    c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

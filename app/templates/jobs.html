@@ -1,0 +1,106 @@
+{% extends "layout_dash.html" %}
+{% block title %}Jobs & Internships — AI CareerVerse{% endblock %}
+{% block page_title %}Jobs & Internships{% endblock %}
+{% block content %}
+<div style="padding:1.75rem;max-width:80rem;margin:0 auto">
+  <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:.3rem">
+        💼 Jobs & Internships
+      </h1>
+      <p style="color:var(--text-lo);font-size:.875rem">Opportunities posted exclusively by alumni mentors</p>
+    </div>
+    {% if session.get('role') in ['alumni','admin'] %}
+    <a href="/jobs/post" class="btn btn-primary" style="text-decoration:none">+ Post a Job</a>
+    {% endif %}
+  </div>
+
+  <!-- Filters -->
+  <form method="GET" style="display:flex;gap:.875rem;margin-bottom:1.75rem;flex-wrap:wrap">
+    <div style="position:relative;flex:1;min-width:16rem">
+      <input class="input" name="q" value="{{ q }}" placeholder="Search title, company, skills..."
+        style="padding-left:2.5rem"/>
+      <span style="position:absolute;left:.875rem;top:50%;transform:translateY(-50%);pointer-events:none">🔍</span>
+    </div>
+    <select class="input" name="type" style="width:12rem">
+      <option value="">All Types</option>
+      <option value="full_time" {% if job_type=='full_time' %}selected{% endif %}>Full Time</option>
+      <option value="internship" {% if job_type=='internship' %}selected{% endif %}>Internship</option>
+      <option value="part_time" {% if job_type=='part_time' %}selected{% endif %}>Part Time</option>
+      <option value="contract" {% if job_type=='contract' %}selected{% endif %}>Contract</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+  </form>
+
+  {% if jobs %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(22rem,1fr));gap:1.25rem">
+    {% for job in jobs %}
+    <div class="card" style="padding:1.5rem;transition:all .3s;animation:fadeUp .35s ease {{ loop.index*.05 }}s both"
+      onmouseover="this.style.borderColor='rgba(26,82,255,.35)';this.style.transform='translateY(-3px)'"
+      onmouseout="this.style.borderColor='';this.style.transform=''">
+
+      <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:.875rem">
+        <div>
+          <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.95rem;margin-bottom:.25rem">
+            {{ job.title }}
+          </h3>
+          <p style="font-size:.82rem;color:#85a8ff;font-family:'Syne',sans-serif;font-weight:600">{{ job.company }}</p>
+        </div>
+        <span class="badge {% if job.job_type=='internship' %}badge-violet{% elif job.job_type=='full_time' %}badge-emerald{% else %}badge-amber{% endif %}" style="white-space:nowrap;flex-shrink:0">
+          {{ job.job_type.replace('_',' ').title() }}
+        </span>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:.875rem">
+        {% if job.location %}
+        <span style="font-size:.78rem;color:var(--text-lo)">📍 {{ job.location }}</span>
+        {% endif %}
+        {% if job.salary_range %}
+        <span style="font-size:.78rem;color:var(--emerald)">💰 {{ job.salary_range }}</span>
+        {% endif %}
+      </div>
+
+      {% if job.description %}
+      <p style="font-size:.82rem;color:var(--text-lo);line-height:1.6;margin-bottom:1rem;
+        display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">
+        {{ job.description }}
+      </p>
+      {% endif %}
+
+      {% if job.skills_required %}
+      <div style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:1rem">
+        {% for sk in job.skills_required.split(',')[:5] %}
+        <span class="chip" style="font-size:.68rem">{{ sk.strip() }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:.72rem;color:var(--text-lo)">
+          {{ job.created_at.strftime('%b %d, %Y') if job.created_at else '' }}
+        </span>
+        <div style="display:flex;gap:.5rem">
+          {% if job.apply_url %}
+          <a href="{{ job.apply_url }}" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none">External →</a>
+          {% endif %}
+          {% if session.get('role') == 'student' %}
+          <form method="POST" action="/jobs/apply/{{ job.id }}" style="margin:0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+            <button type="submit" class="btn btn-primary btn-sm">Apply Now</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="card" style="padding:4rem;text-align:center">
+    <p style="font-size:2.5rem;margin-bottom:1rem">💼</p>
+    <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:.5rem">No jobs found</h3>
+    <p style="color:var(--text-lo);font-size:.875rem">Try different search terms or check back later.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

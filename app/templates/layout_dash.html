@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block body %}
+<div style="display:flex;height:100vh;overflow:hidden;background:var(--bg-base)">
+
+  <!-- ══ SIDEBAR ════════════════════════════════════════ -->
+  <aside id="sidebar" style="width:15.5rem;flex-shrink:0;background:var(--bg-surface);
+    border-right:1px solid var(--border);display:flex;flex-direction:column;
+    transition:width .3s ease;overflow:hidden;position:relative">
+
+    <!-- Logo -->
+    <div style="padding:1.25rem 1.125rem;border-bottom:1px solid var(--border);flex-shrink:0">
+      <a href="/" style="display:flex;align-items:center;gap:.75rem;text-decoration:none">
+        <div style="width:2.25rem;height:2.25rem;border-radius:.875rem;flex-shrink:0;
+          background:linear-gradient(135deg,#1a52ff,#8b5cf6);
+          display:flex;align-items:center;justify-content:center;
+          box-shadow:0 0 16px rgba(26,82,255,.4)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+          </svg>
+        </div>
+        <div style="min-width:0">
+          <p style="font-family:'Syne',sans-serif;font-weight:800;color:#f1f5f9;
+            font-size:.875rem;white-space:nowrap">AI CareerVerse</p>
+          <p style="font-size:.6rem;color:var(--text-lo);text-transform:uppercase;
+            letter-spacing:.1em;white-space:nowrap">Career Intelligence</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- User card -->
+    <div style="padding:.875rem;border-bottom:1px solid var(--border);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem .875rem;
+        border-radius:var(--radius-md);background:var(--bg-raised);cursor:pointer;
+        transition:all .2s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='var(--bg-raised)'">
+        <div class="avatar" style="width:2.25rem;height:2.25rem;font-size:.875rem;flex-shrink:0">
+          {{ session.get('name','U')[0].upper() }}
+        </div>
+        <div style="min-width:0;flex:1">
+          <p style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;
+            font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            {{ session.get('name','User') }}
+          </p>
+          <div style="display:flex;align-items:center;gap:.375rem;margin-top:.15rem">
+            <div class="online-dot"></div>
+            <p style="font-size:.65rem;color:var(--text-lo);text-transform:capitalize">
+              {{ session.get('role','member') }}
+            </p>
+          </div>
+        </div>
+        <a href="/{% if session.get('role') == 'student' %}student{% elif session.get('role') == 'alumni' %}alumni{% endif %}/profile"
+          style="color:var(--text-lo);text-decoration:none;font-size:.75rem;transition:color .2s"
+          onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color=''">✏️</a>
+      </div>
+    </div>
+
+    <!-- Nav items -->
+    <nav style="flex:1;padding:.875rem;overflow-y:auto;display:flex;flex-direction:column;gap:.125rem">
+      {% if session.get('role') == 'student' %}
+        <p class="section-label" style="padding:.5rem .875rem .375rem;margin-bottom:0">Navigation</p>
+        <a href="/student/dashboard" class="sidebar-link {% if request.path == '/student/dashboard' %}active{% endif %}">
+          <span class="icon" style="background:rgba(26,82,255,.12)">📊</span>Dashboard
+        </a>
+        <a href="/student/feed" class="sidebar-link {% if 'feed' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(0,229,255,.1)">📰</span>Feed
+        </a>
+        <a href="/student/recommendations" class="sidebar-link {% if 'recommendations' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(139,92,246,.1)">🤖</span>AI Mentors
+        </a>
+        <a href="/student/mentorship" class="sidebar-link {% if 'mentorship' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(0,214,143,.1)">🤝</span>Mentorship
+        </a>
+        <a href="/student/skill-gap" class="sidebar-link {% if 'skill-gap' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(251,191,36,.1)">💡</span>Skill Gap
+        </a>
+        <a href="/student/search" class="sidebar-link {% if request.path == '/student/search' %}active{% endif %}">
+          <span class="icon" style="background:rgba(251,113,133,.1)">🔍</span>Browse Alumni
+        </a>
+        <a href="/jobs" class="sidebar-link {% if 'jobs' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(0,214,143,.1)">💼</span>Jobs
+        </a>
+        <a href="/communities" class="sidebar-link {% if 'communities' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(26,82,255,.1)">🌐</span>Communities
+        </a>
+        <a href="/projects" class="sidebar-link {% if 'projects' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(139,92,246,.12)">🚀</span>Projects
+        </a>
+        <a href="/ai-tools" class="sidebar-link {% if 'ai-tools' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(0,229,255,.1)">⚡</span>AI Tools
+        </a>
+        <a href="/analytics" class="sidebar-link {% if request.path == '/analytics' %}active{% endif %}">
+          <span class="icon" style="background:rgba(251,191,36,.1)">📈</span>Analytics
+        </a>
+        <a href="/student/profile" class="sidebar-link {% if request.path == '/student/profile' %}active{% endif %}">
+          <span class="icon" style="background:rgba(94,114,228,.12)">👤</span>My Profile
+        </a>
+
+      {% elif session.get('role') == 'alumni' %}
+        <p class="section-label" style="padding:.5rem .875rem .375rem;margin-bottom:0">Navigation</p>
+        <a href="/alumni/dashboard" class="sidebar-link {% if request.path == '/alumni/dashboard' %}active{% endif %}">
+          <span class="icon" style="background:rgba(26,82,255,.12)">📊</span>Dashboard
+        </a>
+        <a href="/alumni/feed" class="sidebar-link {% if 'feed' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(0,229,255,.1)">📰</span>Feed
+        </a>
+        <a href="/alumni/mentorship" class="sidebar-link {% if 'mentorship' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(0,214,143,.1)">🤝</span>Mentorship
+        </a>
+        <a href="/jobs" class="sidebar-link {% if 'jobs' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(0,214,143,.12)">💼</span>Post Jobs
+        </a>
+        <a href="/communities" class="sidebar-link {% if 'communities' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(26,82,255,.1)">🌐</span>Communities
+        </a>
+        <a href="/analytics" class="sidebar-link {% if request.path == '/analytics' %}active{% endif %}">
+          <span class="icon" style="background:rgba(251,191,36,.1)">📈</span>Analytics
+        </a>
+        <a href="/alumni/profile" class="sidebar-link {% if request.path == '/alumni/profile' %}active{% endif %}">
+          <span class="icon" style="background:rgba(94,114,228,.12)">👤</span>My Profile
+        </a>
+
+      {% elif session.get('role') == 'admin' %}
+        <p class="section-label" style="padding:.5rem .875rem .375rem;margin-bottom:0">Administration</p>
+        <a href="/admin/dashboard" class="sidebar-link {% if 'dashboard' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(26,82,255,.12)">📊</span>Dashboard
+        </a>
+        <a href="/admin/users" class="sidebar-link {% if 'users' in request.path %}active{% endif %}">
+          <span class="icon" style="background:rgba(0,214,143,.1)">👥</span>Users
+        </a>
+        <a href="/analytics" class="sidebar-link {% if request.path == '/analytics' %}active{% endif %}">
+          <span class="icon" style="background:rgba(251,191,36,.1)">📈</span>Analytics
+        </a>
+      {% endif %}
+    </nav>
+
+    <!-- Bottom -->
+    <div style="padding:.875rem;border-top:1px solid var(--border);flex-shrink:0">
+      <a href="/logout" class="sidebar-link" style="color:var(--rose)">
+        <span class="icon" style="background:rgba(251,113,133,.1)">🚪</span>Sign Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ═══════════════════════════════════════════ -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden">
+
+    <!-- Topbar -->
+    <header style="height:3.5rem;background:rgba(11,17,32,.85);backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);display:flex;align-items:center;
+      padding:0 1.25rem;gap:.75rem;flex-shrink:0;z-index:40">
+
+      <button onclick="toggleSidebar()" class="btn btn-ghost btn-sm"
+        style="padding:.375rem .5rem;font-size:1.1rem;border:none;color:var(--text-mid)">
+        ☰
+      </button>
+
+      <!-- Breadcrumb / title -->
+      <div style="flex:1;display:flex;align-items:center;gap:.5rem">
+        <p style="font-family:'Syne',sans-serif;font-size:.8rem;color:var(--text-lo)">
+          {{ session.get('role','') | capitalize }}
+        </p>
+        <span style="color:var(--border)">/</span>
+        <p style="font-family:'Syne',sans-serif;font-size:.8rem;font-weight:600;color:var(--text-mid)">
+          {% block page_title %}Overview{% endblock %}
+        </p>
+      </div>
+
+      <!-- Search bar -->
+      <div class="hide-mobile" style="position:relative">
+        <input placeholder="Search anything..." style="width:16rem;background:var(--bg-raised);
+          border:1px solid var(--border);border-radius:var(--radius-md);
+          padding:.5rem 1rem .5rem 2.25rem;color:var(--text-hi);font-size:.8rem;
+          font-family:'Outfit',sans-serif;outline:none;transition:all .2s"
+          onfocus="this.style.borderColor='var(--brand)';this.style.width='20rem'"
+          onblur="this.style.borderColor='';this.style.width='16rem'"/>
+        <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);
+          font-size:.875rem;pointer-events:none">🔍</span>
+      </div>
+
+      <!-- Notification bell -->
+      <div style="position:relative">
+        <button onclick="toggleNotifs()" style="position:relative;padding:.5rem;
+          border-radius:var(--radius-md);background:none;border:none;
+          color:var(--text-mid);cursor:pointer;font-size:1.1rem;transition:color .2s"
+          onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color=''">
+          🔔
+          <span id="notif-badge" style="display:none;position:absolute;top:4px;right:4px;
+            width:.875rem;height:.875rem;background:var(--rose);border-radius:50%;
+            font-size:.55rem;font-weight:700;color:#fff;font-family:'Syne',sans-serif;
+            display:flex;align-items:center;justify-content:center">0</span>
+        </button>
+
+        <!-- Notification panel -->
+        <div id="notif-panel" style="display:none;position:absolute;right:0;top:3rem;
+          width:22rem;z-index:50;background:var(--bg-surface);border:1px solid var(--border);
+          border-radius:var(--radius-xl);box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden">
+          <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);
+            display:flex;align-items:center;justify-content:space-between">
+            <span style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.9rem">
+              Notifications
+            </span>
+            <button onclick="markAllRead()" style="font-size:.72rem;color:#85a8ff;
+              background:none;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600">
+              Mark all read
+            </button>
+          </div>
+          <div id="notif-list" style="max-height:22rem;overflow-y:auto">
+            <div style="padding:3rem;text-align:center;color:var(--text-lo);font-size:.875rem">
+              Loading...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avatar -->
+      <div class="avatar" style="width:2rem;height:2rem;font-size:.75rem;cursor:pointer"
+        onclick="window.location='/{% if session.get('role') == 'student' %}student{% elif session.get('role') == 'alumni' %}alumni{% endif %}/profile'">
+        {{ session.get('name','U')[0].upper() }}
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main style="flex:1;overflow-y:auto;
+      background:radial-gradient(ellipse 60% 40% at 50% -10%,rgba(26,82,255,.06) 0%,transparent 50%)">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script>
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  s.style.width = s.style.width === '0px' ? '15.5rem' : '0px';
+}
+function toggleNotifs() {
+  const p = document.getElementById('notif-panel');
+  if (p.style.display === 'none') {
+    p.style.display = 'block';
+    loadNotifications();
+  } else {
+    p.style.display = 'none';
+  }
+}
+async function loadNotifications() {
+  try {
+    const r = await fetch('/api/notifications');
+    const data = await r.json();
+    const list = document.getElementById('notif-list');
+    const badge = document.getElementById('notif-badge');
+    if (!data.length) {
+      list.innerHTML = '<div style="padding:3rem;text-align:center;color:var(--text-lo);font-size:.875rem">All caught up! 🎉</div>';
+      return;
+    }
+    const unread = data.filter(n => !n.is_read).length;
+    if (unread > 0) { badge.style.display = 'flex'; badge.textContent = unread; }
+    else { badge.style.display = 'none'; }
+    list.innerHTML = data.map(n => `
+      <div style="padding:.875rem 1.25rem;border-bottom:1px solid var(--border);cursor:pointer;
+        transition:background .15s;${!n.is_read ? 'background:rgba(26,82,255,.04);' : ''}"
+        onmouseover="this.style.background='rgba(255,255,255,.03)'"
+        onmouseout="this.style.background='${!n.is_read ? 'rgba(26,82,255,.04)' : ''}'">
+        <div style="display:flex;align-items:start;gap:.625rem">
+          ${!n.is_read ? '<span style="width:.5rem;height:.5rem;border-radius:50%;background:var(--brand);flex-shrink:0;margin-top:.25rem"></span>' : '<span style="width:.5rem;flex-shrink:0"></span>'}
+          <div>
+            <p style="font-size:.8rem;font-weight:600;color:#85a8ff;font-family:\'Syne\',sans-serif">${n.title||''}</p>
+            <p style="font-size:.78rem;color:var(--text-mid);margin-top:.2rem;line-height:1.4">${n.message||''}</p>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('notif-list').innerHTML = '<div style="padding:1.5rem;color:var(--rose);font-size:.875rem">Failed to load notifications</div>';
+  }
+}
+async function markAllRead() {
+  await fetch('/api/notifications/mark-all-read', { method:'POST' });
+  document.getElementById('notif-badge').style.display = 'none';
+  loadNotifications();
+}
+document.addEventListener('click', e => {
+  const p = document.getElementById('notif-panel');
+  if (p && p.style.display !== 'none' && !p.contains(e.target) && !e.target.closest('[onclick="toggleNotifs()"]')) {
+    p.style.display = 'none';
+  }
+});
+</script>
+{% endblock %}

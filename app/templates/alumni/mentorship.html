@@ -1,0 +1,110 @@
+{% extends "layout_dash.html" %}
+{% block title %}Mentorship Management — AI CareerVerse{% endblock %}
+{% block page_title %}Mentorship{% endblock %}
+{% block content %}
+<div style="padding:1.75rem;max-width:72rem;margin:0 auto">
+  <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:.3rem">
+        🤝 Mentorship Requests
+      </h1>
+      <p style="color:var(--text-lo);font-size:.875rem">Review and manage student mentorship requests</p>
+    </div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+      <span class="badge badge-amber">{{ requests|selectattr('status','eq','pending')|list|length }} Pending</span>
+      <span class="badge badge-emerald">{{ requests|selectattr('status','eq','accepted')|list|length }} Active</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:.375rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:.5rem">
+    {% for tab_id,tab_label in [('all','All Requests'),('pending','Pending'),('accepted','Active'),('rejected','Declined')] %}
+    <button onclick="filterTab('{{ tab_id }}')" id="atab-{{ tab_id }}"
+      style="padding:.5rem 1rem;border-radius:var(--radius-md);border:none;cursor:pointer;transition:all .2s;
+        font-family:'Syne',sans-serif;font-weight:600;font-size:.82rem;
+        {% if loop.first %}background:rgba(26,82,255,.15);color:#85a8ff;{% else %}background:none;color:var(--text-lo);{% endif %}">
+      {{ tab_label }}
+    </button>
+    {% endfor %}
+  </div>
+
+  {% if requests %}
+  <div style="display:flex;flex-direction:column;gap:1rem">
+    {% for req in requests %}
+    <div class="card req-card" data-status="{{ req.status }}"
+      style="padding:1.5rem;transition:all .3s;animation:fadeUp .35s ease {{ loop.index*.05 }}s both"
+      onmouseover="this.style.borderColor='rgba(26,82,255,.3)'" onmouseout="this.style.borderColor=''">
+      <div style="display:flex;align-items:start;gap:1rem;flex-wrap:wrap">
+        <div class="avatar" style="width:3rem;height:3rem;font-size:1.1rem;flex-shrink:0">
+          {{ req.get('student_name','?')[0].upper() }}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;margin-bottom:.375rem">
+            <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.95rem">
+              {{ req.get('student_name','Unknown') }}
+            </h3>
+            <span class="badge {% if req.status=='accepted' %}badge-emerald{% elif req.status=='pending' %}badge-amber{% else %}badge-rose{% endif %}">
+              {{ req.status.title() }}
+            </span>
+          </div>
+          <p style="font-size:.8rem;color:var(--text-lo);margin-bottom:.625rem">
+            {% if req.get('department') %}{{ req.get('department') }}{% endif %}
+            {% if req.get('year') %} · {{ req.get('year') }} Year{% endif %}
+          </p>
+          {% if req.get('skills') %}
+          <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.75rem">
+            {% for sk in (req.get('skills','') or '').split(',')[:5] %}
+            <span class="chip" style="font-size:.68rem">{{ sk.strip() }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if req.get('message') %}
+          <div style="padding:.75rem 1rem;border-radius:var(--radius-md);background:var(--bg-raised);
+            border-left:3px solid rgba(26,82,255,.3)">
+            <p style="font-size:.82rem;color:var(--text-mid);line-height:1.6">
+              "{{ req.get('message') }}"
+            </p>
+          </div>
+          {% endif %}
+        </div>
+        {% if req.status == 'pending' %}
+        <div style="display:flex;flex-direction:column;gap:.5rem;flex-shrink:0">
+          <a href="/alumni/respond/{{ req.id }}/accept" class="btn btn-success btn-sm" style="text-decoration:none">✓ Accept</a>
+          <a href="/alumni/respond/{{ req.id }}/reject" class="btn btn-danger btn-sm" style="text-decoration:none">✕ Decline</a>
+        </div>
+        {% elif req.status == 'accepted' %}
+        <div style="flex-shrink:0">
+          <span style="font-size:.78rem;color:var(--emerald);font-family:'Syne',sans-serif;font-weight:600">
+            ✓ Mentoring
+          </span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card" style="padding:4rem;text-align:center">
+    <p style="font-size:2.5rem;margin-bottom:1rem">📭</p>
+    <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:.5rem">No requests yet</h3>
+    <p style="color:var(--text-lo);font-size:.875rem;margin-bottom:1.5rem">
+      Complete your profile and mark yourself as accepting mentees to attract students.
+    </p>
+    <a href="/alumni/profile" class="btn btn-primary" style="text-decoration:none">Update Profile</a>
+  </div>
+  {% endif %}
+</div>
+<script>
+function filterTab(s) {
+  ['all','pending','accepted','rejected'].forEach(t => {
+    const b = document.getElementById('atab-'+t);
+    if (!b) return;
+    b.style.background = t===s ? 'rgba(26,82,255,.15)' : 'none';
+    b.style.color = t===s ? '#85a8ff' : 'var(--text-lo)';
+  });
+  document.querySelectorAll('.req-card').forEach(c => {
+    c.style.display = (s==='all' || c.dataset.status===s) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

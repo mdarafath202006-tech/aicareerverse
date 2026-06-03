@@ -1,0 +1,99 @@
+{% extends "layout_dash.html" %}
+{% block title %}Browse Alumni — AI CareerVerse{% endblock %}
+{% block page_title %}Browse Alumni{% endblock %}
+{% block content %}
+<div style="padding:1.75rem;max-width:80rem;margin:0 auto">
+  <div style="margin-bottom:2rem">
+    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:.3rem">
+      🔍 Browse Alumni
+    </h1>
+    <p style="color:var(--text-lo);font-size:.875rem">Search by name, skill, company, or role</p>
+  </div>
+
+  <!-- Search bar -->
+  <form method="GET" style="display:flex;align-items:center;gap:.875rem;margin-bottom:1.75rem;flex-wrap:wrap">
+    <div style="position:relative;flex:1;min-width:16rem">
+      <input class="input" name="q" value="{{ query }}" placeholder="Search name, skill, company..."
+        style="padding-left:2.5rem"/>
+      <span style="position:absolute;left:.875rem;top:50%;transform:translateY(-50%);font-size:.95rem;pointer-events:none">🔍</span>
+    </div>
+    <input class="input" name="skill" value="{{ skill }}" placeholder="Skill" style="width:10rem"/>
+    <input class="input" name="company" value="{{ company }}" placeholder="Company" style="width:10rem"/>
+    <button type="submit" class="btn btn-primary">Search</button>
+    {% if query or skill or company %}
+    <a href="/student/search" class="btn btn-ghost" style="text-decoration:none">Clear</a>
+    {% endif %}
+  </form>
+
+  <!-- Results count -->
+  {% if results %}
+  <p style="font-size:.8rem;color:var(--text-lo);margin-bottom:1.25rem;font-family:'Syne',sans-serif;font-weight:600">
+    {{ results|length }} alumni found
+    {% if query %} for "<span style="color:#85a8ff">{{ query }}</span>"{% endif %}
+    {% if skill %} · skill: <span style="color:#a78bfa">{{ skill }}</span>{% endif %}
+    {% if company %} · company: <span style="color:#00e5ff">{{ company }}</span>{% endif %}
+  </p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(18rem,1fr));gap:1.25rem">
+    {% for a in results %}
+    <div class="card" style="padding:1.25rem;transition:all .3s"
+      onmouseover="this.style.borderColor='rgba(26,82,255,.35)';this.style.transform='translateY(-3px)'"
+      onmouseout="this.style.borderColor='';this.style.transform=''">
+      <div style="display:flex;align-items:start;gap:.875rem;margin-bottom:1rem">
+        <div class="avatar" style="width:2.75rem;height:2.75rem;font-size:1.05rem;flex-shrink:0">
+          {{ a.get('name','?')[0].upper() }}
+        </div>
+        <div style="flex:1;min-width:0">
+          <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.9rem;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.get('name','') }}</h3>
+          <p style="font-size:.78rem;color:var(--text-lo);margin-top:.1rem">
+            {{ a.get('job_role','') }}{% if a.get('company') %} · {{ a.get('company') }}{% endif %}
+          </p>
+        </div>
+        {% if a.get('is_hiring') %}<span class="badge badge-emerald" style="font-size:.62rem;flex-shrink:0">Hiring</span>{% endif %}
+      </div>
+
+      {% if a.get('bio') %}
+      <p style="font-size:.78rem;color:var(--text-lo);line-height:1.55;margin-bottom:.875rem;
+        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+        {{ a.get('bio') }}
+      </p>
+      {% endif %}
+
+      {% if a.get('skills') %}
+      <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1rem">
+        {% for sk in a.get('skills','').split(',')[:4] %}
+        <span class="chip" style="font-size:.68rem">{{ sk.strip() }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div style="display:flex;gap:.625rem">
+        <a href="/alumni/view/{{ a.get('alumni_id') or a.get('id') }}" class="btn btn-ghost btn-sm"
+          style="text-decoration:none;flex:1;justify-content:center">View Profile</a>
+        <form method="POST" action="/student/request_mentor/{{ a.get('alumni_id') or a.get('id') }}" style="flex:1">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+          <input type="hidden" name="message" value="Hi! I'd love to connect."/>
+          <button type="submit" class="btn btn-primary btn-sm" style="width:100%">Connect</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% elif query or skill or company %}
+  <div class="card" style="padding:4rem;text-align:center">
+    <p style="font-size:2.5rem;margin-bottom:1rem">🔍</p>
+    <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:.5rem">No results found</h3>
+    <p style="color:var(--text-lo);font-size:.875rem">Try different keywords or clear filters</p>
+  </div>
+
+  {% else %}
+  <div class="card" style="padding:4rem;text-align:center">
+    <p style="font-size:2.5rem;margin-bottom:1rem">👥</p>
+    <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:.5rem">Search Alumni</h3>
+    <p style="color:var(--text-lo);font-size:.875rem">Use the search bar above to find alumni by name, skill, or company</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

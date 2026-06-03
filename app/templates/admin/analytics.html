@@ -1,0 +1,60 @@
+{% extends "layout_dash.html" %}
+{% block title %}Platform Analytics — Admin{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:1000px;margin:0 auto">
+  <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f1f5f9;margin-bottom:1.5rem">Platform Analytics</h1>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+    {% set stat_cards = [
+      ('👥', 'Total Users', stats.total_users, '#1a52ff'),
+      ('🎓', 'Students', stats.students, '#00e5ff'),
+      ('🌟', 'Alumni', stats.alumni, '#8b5cf6'),
+      ('💼', 'Jobs Posted', stats.jobs, '#fbbf24'),
+      ('📝', 'Posts', stats.posts, '#00d68f'),
+      ('🤝', 'Mentorships', stats.mentorships_total, '#fb7185'),
+      ('✅', 'Accepted Mentorships', stats.mentorships_accepted, '#00d68f'),
+      ('🔗', 'Referrals', stats.referrals_total, '#8b5cf6'),
+      ('✅', 'Approved Referrals', stats.referrals_approved, '#00d68f'),
+      ('📋', 'Applications', stats.applications, '#fbbf24'),
+    ] %}
+    {% for icon, label, value, color in stat_cards %}
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.25rem;text-align:center">
+      <div style="font-size:1.75rem;margin-bottom:.375rem">{{ icon }}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;color:{{ color }}">{{ value }}</div>
+      <p style="font-size:.72rem;color:var(--text-lo);margin-top:.2rem">{{ label }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.25rem">
+      <p style="font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:#f1f5f9;margin-bottom:1rem">Mentorship Conversion</p>
+      <div style="display:flex;flex-direction:column;gap:.625rem">
+        {% set total = stats.mentorships_total or 1 %}
+        {% for label, value, color in [('Total Requests', stats.mentorships_total, '#1a52ff'), ('Accepted', stats.mentorships_accepted, '#00d68f'), ('Pending', stats.mentorships_total - stats.mentorships_accepted, '#fbbf24')] %}
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <span style="font-size:.8rem;color:var(--text-mid);min-width:100px">{{ label }}</span>
+          <div style="flex:1;background:var(--bg-raised);border-radius:.375rem;height:.5rem;overflow:hidden">
+            <div style="height:100%;background:{{ color }};border-radius:.375rem;width:{{ [int(value/total*100), 100]|min }}%"></div>
+          </div>
+          <span style="font-size:.8rem;font-weight:700;color:#f1f5f9;min-width:30px">{{ value }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.25rem">
+      <p style="font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:#f1f5f9;margin-bottom:1rem">Referral Funnel</p>
+      <div style="display:flex;flex-direction:column;gap:.625rem">
+        {% set rtotal = stats.referrals_total or 1 %}
+        {% for label, value, color in [('Total Requests', stats.referrals_total, '#8b5cf6'), ('Approved', stats.referrals_approved, '#00d68f'), ('Pending', stats.referrals_total - stats.referrals_approved, '#fbbf24')] %}
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <span style="font-size:.8rem;color:var(--text-mid);min-width:100px">{{ label }}</span>
+          <div style="flex:1;background:var(--bg-raised);border-radius:.375rem;height:.5rem;overflow:hidden">
+            <div style="height:100%;background:{{ color }};border-radius:.375rem;width:{{ [int(value/rtotal*100), 100]|min }}%"></div>
+          </div>
+          <span style="font-size:.8rem;font-weight:700;color:#f1f5f9;min-width:30px">{{ value }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

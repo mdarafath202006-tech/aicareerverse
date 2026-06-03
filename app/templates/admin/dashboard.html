@@ -1,0 +1,135 @@
+{% extends "layout_dash.html" %}
+{% block title %}Admin Dashboard — AI CareerVerse{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:1200px;margin:0 auto">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f1f5f9">Platform Control Center</h1>
+      <p style="color:var(--text-mid);font-size:.875rem;margin-top:.25rem">Monitor users, content, and platform health in real-time</p>
+    </div>
+    <div style="display:flex;gap:.75rem">
+      <a href="/admin/users" style="padding:.6rem 1.1rem;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-mid);border-radius:.75rem;text-decoration:none;font-size:.875rem;font-weight:500">Manage Users</a>
+      <a href="/admin/analytics" style="padding:.6rem 1.1rem;background:linear-gradient(135deg,#1a52ff,#8b5cf6);color:#fff;border-radius:.75rem;text-decoration:none;font-size:.875rem;font-weight:600">Analytics →</a>
+    </div>
+  </div>
+
+  <!-- Stat grid -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:1rem;margin-bottom:1.5rem">
+    {% for icon, label, value, color, bg in [
+      ('👥', 'Total Users',      stats.total_users,       '#85a8ff', 'rgba(26,82,255,.1)'),
+      ('🎓', 'Students',         stats.students,           '#00e5ff', 'rgba(0,229,255,.1)'),
+      ('🌟', 'Alumni',           stats.alumni,             '#a78bfa', 'rgba(139,92,246,.1)'),
+      ('💼', 'Active Jobs',      stats.jobs,               '#fbbf24', 'rgba(251,191,36,.1)'),
+      ('📝', 'Posts',            stats.posts,              '#00d68f', 'rgba(0,214,143,.1)'),
+      ('🤝', 'Mentorships',      stats.mentorships,        '#fb7185', 'rgba(251,113,133,.1)'),
+      ('⏳', 'Pending Requests', stats.pending_mentors,    '#fbbf24', 'rgba(251,191,36,.1)'),
+      ('🔗', 'Referrals',        stats.referrals,          '#00e5ff', 'rgba(0,229,255,.1)'),
+      ('📋', 'Applications',     stats.applications,       '#85a8ff', 'rgba(26,82,255,.1)'),
+      ('📚', 'Knowledge',        stats.knowledge_entries,  '#a78bfa', 'rgba(139,92,246,.1)'),
+      ('🏢', 'Companies',        '8',                      '#00d68f', 'rgba(0,214,143,.1)'),
+      ('🟢', 'Hiring Alumni',    stats.hiring_alumni,      '#00d68f', 'rgba(0,214,143,.1)'),
+    ] %}
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.1rem;transition:transform .2s"
+      onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <div style="width:2.25rem;height:2.25rem;border-radius:.625rem;background:{{ bg }};display:flex;align-items:center;justify-content:center;font-size:.95rem;margin-bottom:.75rem">{{ icon }}</div>
+      <p style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:{{ color }}">{{ value }}</p>
+      <p style="font-size:.72rem;color:var(--text-lo);margin-top:.2rem">{{ label }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Recent Users + Pending Referrals -->
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
+
+    <!-- Recent Users -->
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;overflow:hidden">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <h3 style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:#f1f5f9">Recent Users</h3>
+        <a href="/admin/users" style="font-size:.75rem;color:#4d7bff;text-decoration:none">View all →</a>
+      </div>
+      {% for user in recent_users[:10] %}
+      <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border);transition:background .15s"
+        onmouseover="this.style.background='var(--bg-raised)'" onmouseout="this.style.background=''">
+        <div style="width:2rem;height:2rem;border-radius:50%;background:linear-gradient(135deg,#1a52ff,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.72rem;flex-shrink:0">
+          {{ user.name[0].upper() }}
+        </div>
+        <div style="flex:1;min-width:0">
+          <p style="font-weight:600;color:#f1f5f9;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user.name }}</p>
+          <p style="font-size:.72rem;color:var(--text-lo)">{{ user.email }}</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0">
+          <span style="font-size:.68rem;padding:.15rem .5rem;border-radius:.3rem;
+            {% if user.role == 'admin' %}background:rgba(251,191,36,.1);color:#fbbf24;
+            {% elif user.role == 'alumni' %}background:rgba(139,92,246,.1);color:#8b5cf6;
+            {% else %}background:rgba(26,82,255,.1);color:#4d7bff;{% endif %}">{{ user.role }}</span>
+          <form action="/admin/users/{{ user.id }}/toggle" method="POST" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" style="font-size:.68rem;padding:.15rem .5rem;border-radius:.3rem;cursor:pointer;
+              {% if user.is_active %}background:rgba(0,214,143,.1);border:1px solid rgba(0,214,143,.2);color:#00d68f;
+              {% else %}background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.2);color:#fb7185;{% endif %}">
+              {{ '✓' if user.is_active else '✗' }}
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pending Referrals -->
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;overflow:hidden">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+        <h3 style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:#f1f5f9">Pending Referrals</h3>
+      </div>
+      {% if pending_referrals %}
+      {% for ref in pending_referrals %}
+      <div style="padding:.875rem 1.25rem;border-bottom:1px solid var(--border)">
+        <p style="font-size:.82rem;font-weight:600;color:#f1f5f9">{{ ref.position or '—' }}</p>
+        <p style="font-size:.75rem;color:var(--text-mid)">@ {{ ref.company or '—' }}</p>
+        <p style="font-size:.72rem;color:var(--text-lo);margin-top:.25rem">{{ ref.created_at.strftime('%b %d') if ref.created_at else '—' }}</p>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div style="padding:2rem;text-align:center;color:var(--text-lo);font-size:.875rem">No pending referrals</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Posts + Jobs -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;overflow:hidden">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+        <h3 style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:#f1f5f9">Recent Posts</h3>
+      </div>
+      {% for post in recent_posts %}
+      <div style="padding:.875rem 1.25rem;border-bottom:1px solid var(--border)">
+        <p style="font-size:.82rem;color:#f1f5f9;line-height:1.4">{{ post.content[:90] }}{% if post.content|length > 90 %}...{% endif %}</p>
+        <div style="display:flex;gap:.75rem;margin-top:.375rem">
+          <span style="font-size:.7rem;color:var(--text-lo)">❤️ {{ post.likes_count }}</span>
+          <span style="font-size:.7rem;color:var(--text-lo)">💬 {{ post.comments_count }}</span>
+          <span style="font-size:.7rem;color:var(--text-lo)">{{ post.created_at.strftime('%b %d') if post.created_at else '' }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;overflow:hidden">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+        <h3 style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:#f1f5f9">Recent Jobs</h3>
+      </div>
+      {% for job in recent_jobs %}
+      <div style="padding:.875rem 1.25rem;border-bottom:1px solid var(--border)">
+        <p style="font-size:.82rem;font-weight:600;color:#f1f5f9">{{ job.title }}</p>
+        <p style="font-size:.75rem;color:var(--text-mid)">{{ job.company }} · {{ job.location or 'India' }}</p>
+        <div style="display:flex;gap:.5rem;margin-top:.3rem">
+          <span style="font-size:.68rem;padding:.15rem .5rem;border-radius:.3rem;background:rgba(26,82,255,.1);color:#4d7bff">{{ job.job_type.replace('_',' ').title() }}</span>
+          {% if job.salary_range %}
+          <span style="font-size:.68rem;color:var(--text-lo)">{{ job.salary_range }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

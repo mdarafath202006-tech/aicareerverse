@@ -1,0 +1,184 @@
+{% extends "layout_dash.html" %}
+{% block title %}AI Interview Coach — AI CareerVerse{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:900px;margin:0 auto">
+  <div style="margin-bottom:1.5rem">
+    <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f1f5f9">🎙️ AI Interview Coach</h1>
+    <p style="color:var(--text-mid);font-size:.85rem">Practice interviews, get scored, and improve your answers with AI feedback</p>
+  </div>
+
+  <!-- Config -->
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.25rem;margin-bottom:1.25rem">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem">
+      <div>
+        <label style="display:block;font-size:.75rem;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Role</label>
+        <input type="text" id="interview-role" value="Software Engineer"
+          style="width:100%;padding:.625rem .875rem;background:var(--bg-raised);border:1px solid var(--border);border-radius:.625rem;color:#f1f5f9;font-size:.85rem;outline:none"/>
+      </div>
+      <div>
+        <label style="display:block;font-size:.75rem;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Type</label>
+        <select id="interview-type" style="width:100%;padding:.625rem .875rem;background:var(--bg-raised);border:1px solid var(--border);border-radius:.625rem;color:#f1f5f9;font-size:.85rem;outline:none">
+          <option value="technical">Technical</option>
+          <option value="hr" selected>HR / Behavioral</option>
+          <option value="system_design">System Design</option>
+          <option value="case_study">Case Study</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:.75rem;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Difficulty</label>
+        <select id="interview-difficulty" style="width:100%;padding:.625rem .875rem;background:var(--bg-raised);border:1px solid var(--border);border-radius:.625rem;color:#f1f5f9;font-size:.85rem;outline:none">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+    </div>
+    <button onclick="getQuestion()" style="margin-top:.875rem;background:linear-gradient(135deg,#1a52ff,#8b5cf6);color:#fff;border:none;padding:.75rem 1.5rem;border-radius:.75rem;font-weight:600;font-size:.875rem;cursor:pointer">
+      Generate Question →
+    </button>
+  </div>
+
+  <!-- Question Card -->
+  <div id="question-card" style="display:none;background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;margin-bottom:1rem">
+    <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:1rem">
+      <span style="font-size:.75rem;padding:.25rem .625rem;border-radius:.375rem;background:rgba(139,92,246,.1);color:#8b5cf6" id="q-type-badge">HR</span>
+      <span style="font-size:.75rem;color:var(--text-lo)" id="q-role-badge">Software Engineer</span>
+    </div>
+    <p id="question-text" style="font-size:1rem;font-weight:600;color:#f1f5f9;line-height:1.5;margin-bottom:1rem"></p>
+    <div id="hints-section" style="display:none;background:var(--bg-raised);border-radius:.625rem;padding:.875rem;margin-bottom:1rem">
+      <p style="font-size:.75rem;font-weight:600;color:#fbbf24;margin-bottom:.5rem">💡 Hints</p>
+      <ul id="hints-list" style="padding-left:1rem;color:var(--text-mid);font-size:.82rem;display:flex;flex-direction:column;gap:.2rem"></ul>
+    </div>
+    <button onclick="toggleHints()" style="font-size:.78rem;color:var(--text-mid);background:none;border:1px solid var(--border);padding:.35rem .75rem;border-radius:.5rem;cursor:pointer">Show Hints</button>
+  </div>
+
+  <!-- Answer Section -->
+  <div id="answer-section" style="display:none;background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;margin-bottom:1rem">
+    <h3 style="font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:#f1f5f9;margin-bottom:.875rem">Your Answer</h3>
+    <textarea id="user-answer" rows="6" placeholder="Type your answer here. Take your time — structure your thoughts clearly..."
+      style="width:100%;padding:.75rem .875rem;background:var(--bg-raised);border:1px solid var(--border);border-radius:.625rem;color:#f1f5f9;font-size:.875rem;outline:none;resize:vertical;line-height:1.6"></textarea>
+    <div style="display:flex;gap:.75rem;margin-top:.875rem">
+      <button onclick="evaluateAnswer()" style="background:linear-gradient(135deg,#00d68f,#00e5ff);color:#000;border:none;padding:.75rem 1.5rem;border-radius:.75rem;font-weight:700;font-size:.875rem;cursor:pointer">
+        Evaluate My Answer →
+      </button>
+      <button onclick="getQuestion()" style="background:none;border:1px solid var(--border);color:var(--text-mid);padding:.75rem 1.25rem;border-radius:.75rem;font-size:.875rem;cursor:pointer">
+        Skip & New Question
+      </button>
+    </div>
+  </div>
+
+  <!-- Feedback Section -->
+  <div id="feedback-section" style="display:none;background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.5rem">
+    <h3 style="font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:#f1f5f9;margin-bottom:1rem">AI Feedback</h3>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:1rem;margin-bottom:1rem">
+      <div style="text-align:center;padding:1rem;background:var(--bg-raised);border-radius:.875rem">
+        <p id="eval-score" style="font-size:2.5rem;font-weight:800;color:#1a52ff">—</p>
+        <p id="eval-rating" style="font-size:.8rem;color:var(--text-mid)">Score</p>
+      </div>
+      <div>
+        <p id="eval-feedback" style="color:var(--text-mid);font-size:.85rem;line-height:1.7"></p>
+      </div>
+    </div>
+    <div id="eval-details" style="display:flex;flex-direction:column;gap:.75rem"></div>
+    <div style="display:flex;gap:.75rem;margin-top:1rem">
+      <button onclick="getQuestion()" style="background:linear-gradient(135deg,#1a52ff,#8b5cf6);color:#fff;border:none;padding:.75rem 1.25rem;border-radius:.75rem;font-weight:600;font-size:.875rem;cursor:pointer">
+        Next Question →
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentQuestion = '';
+let hintsVisible = false;
+
+async function getQuestion() {
+  const role = document.getElementById('interview-role').value.trim() || 'Software Engineer';
+  const type = document.getElementById('interview-type').value;
+  const diff = document.getElementById('interview-difficulty').value;
+  
+  document.getElementById('question-card').style.display = 'none';
+  document.getElementById('answer-section').style.display = 'none';
+  document.getElementById('feedback-section').style.display = 'none';
+  document.getElementById('user-answer').value = '';
+  hintsVisible = false;
+
+  try {
+    const resp = await fetch('/ai/interview-coach/question', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({role, type, difficulty: diff})
+    });
+    const data = await resp.json();
+    currentQuestion = data.question || '';
+    document.getElementById('question-text').textContent = currentQuestion;
+    document.getElementById('q-type-badge').textContent = type.replace('_',' ').toUpperCase();
+    document.getElementById('q-role-badge').textContent = role;
+    
+    const hintsList = document.getElementById('hints-list');
+    hintsList.innerHTML = (data.hints || []).map(h => `<li>${h}</li>`).join('');
+    document.getElementById('hints-section').style.display = data.hints?.length ? 'block' : 'none';
+    document.getElementById('hints-section').style.display = 'none'; // hidden initially
+    
+    document.getElementById('question-card').style.display = 'block';
+    document.getElementById('answer-section').style.display = 'block';
+    document.getElementById('user-answer').focus();
+  } catch(e) {
+    alert('Failed to generate question. Please try again.');
+  }
+}
+
+function toggleHints() {
+  const h = document.getElementById('hints-section');
+  hintsVisible = !hintsVisible;
+  h.style.display = hintsVisible ? 'block' : 'none';
+  event.target.textContent = hintsVisible ? 'Hide Hints' : 'Show Hints';
+}
+
+async function evaluateAnswer() {
+  const answer = document.getElementById('user-answer').value.trim();
+  const role   = document.getElementById('interview-role').value.trim() || 'Software Engineer';
+  if (!answer) { alert('Please write your answer first.'); return; }
+
+  const btn = event.target;
+  btn.textContent = 'Evaluating... 🔍';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('/ai/interview-coach/evaluate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({question: currentQuestion, answer, role})
+    });
+    const data = await resp.json();
+    const score = data.score || 0;
+    document.getElementById('eval-score').textContent = score + '/100';
+    document.getElementById('eval-score').style.color = score >= 80 ? '#00d68f' : score >= 60 ? '#fbbf24' : '#fb7185';
+    document.getElementById('eval-rating').textContent = data.rating || '—';
+    document.getElementById('eval-feedback').textContent = data.feedback || '';
+    
+    const details = document.getElementById('eval-details');
+    details.innerHTML = '';
+    const sections = [
+      { title: '✅ Strengths', items: data.strengths, color: '#00d68f' },
+      { title: '⚡ Improvements', items: data.improvements, color: '#fbbf24' },
+      { title: '🔑 Key Elements', items: data.ideal_answer_elements, color: '#00e5ff' },
+      { title: '💡 Confidence Tips', items: data.confidence_tips, color: '#8b5cf6' },
+    ];
+    sections.forEach(s => {
+      if (s.items && s.items.length) {
+        const d = document.createElement('div');
+        d.style.cssText = 'background:var(--bg-raised);border-radius:.625rem;padding:.875rem';
+        d.innerHTML = `<p style="font-size:.78rem;font-weight:700;color:${s.color};margin-bottom:.375rem">${s.title}</p>
+          <ul style="padding-left:1rem">${s.items.map(i=>`<li style="color:var(--text-mid);font-size:.8rem;margin-bottom:.2rem">${i}</li>`).join('')}</ul>`;
+        details.appendChild(d);
+      }
+    });
+    document.getElementById('feedback-section').style.display = 'block';
+    document.getElementById('feedback-section').scrollIntoView({behavior:'smooth'});
+  } catch(e) {
+    alert('Evaluation failed. Please try again.');
+  }
+  btn.textContent = 'Evaluate My Answer →';
+  btn.disabled = false;
+}
+</script>
+{% endblock %}
