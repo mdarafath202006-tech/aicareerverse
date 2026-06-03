@@ -1,0 +1,79 @@
+{% extends "layout_dash.html" %}
+{% block title %}Manage Users — Admin{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:1100px;margin:0 auto">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+    <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f1f5f9">Manage Users</h1>
+    <form method="GET" style="display:flex;gap:.75rem;flex-wrap:wrap">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search name or email..."
+        style="padding:.5rem .875rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:.625rem;color:#f1f5f9;font-size:.85rem;outline:none;min-width:200px"/>
+      <select name="role" style="padding:.5rem .875rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:.625rem;color:#f1f5f9;font-size:.85rem;outline:none">
+        <option value="">All Roles</option>
+        <option value="student" {% if role_filter=='student' %}selected{% endif %}>Students</option>
+        <option value="alumni" {% if role_filter=='alumni' %}selected{% endif %}>Alumni</option>
+        <option value="admin" {% if role_filter=='admin' %}selected{% endif %}>Admin</option>
+      </select>
+      <button type="submit" style="padding:.5rem 1rem;background:rgba(26,82,255,.2);border:1px solid rgba(26,82,255,.4);color:#4d7bff;border-radius:.625rem;font-size:.85rem;cursor:pointer">Filter</button>
+    </form>
+  </div>
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border)">
+          <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:.05em">User</th>
+          <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:.05em">Role</th>
+          <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:.05em">Status</th>
+          <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:.05em">Joined</th>
+          <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:.05em">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr style="border-bottom:1px solid var(--border);transition:background .15s" onmouseover="this.style.background='var(--bg-raised)'" onmouseout="this.style.background=''">
+          <td style="padding:.875rem 1rem">
+            <div style="display:flex;align-items:center;gap:.75rem">
+              <div style="width:2rem;height:2rem;border-radius:50%;background:linear-gradient(135deg,#1a52ff,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.75rem;flex-shrink:0">
+                {{ user.name[0].upper() }}
+              </div>
+              <div>
+                <p style="font-weight:600;color:#f1f5f9;font-size:.85rem">{{ user.name }}</p>
+                <p style="font-size:.75rem;color:var(--text-lo)">{{ user.email }}</p>
+              </div>
+            </div>
+          </td>
+          <td style="padding:.875rem 1rem">
+            <span style="font-size:.75rem;padding:.2rem .6rem;border-radius:.375rem;font-weight:600;
+              {% if user.role == 'admin' %}background:rgba(251,191,36,.1);color:#fbbf24;
+              {% elif user.role == 'alumni' %}background:rgba(139,92,246,.1);color:#8b5cf6;
+              {% else %}background:rgba(26,82,255,.1);color:#4d7bff;{% endif %}">
+              {{ user.role.title() }}
+            </span>
+          </td>
+          <td style="padding:.875rem 1rem">
+            <span style="font-size:.75rem;padding:.2rem .6rem;border-radius:.375rem;font-weight:600;
+              {% if user.is_active %}background:rgba(0,214,143,.1);color:#00d68f;{% else %}background:rgba(251,113,133,.1);color:#fb7185;{% endif %}">
+              {{ 'Active' if user.is_active else 'Inactive' }}
+            </span>
+          </td>
+          <td style="padding:.875rem 1rem;font-size:.82rem;color:var(--text-mid)">
+            {{ user.created_at.strftime('%b %d, %Y') if user.created_at else '—' }}
+          </td>
+          <td style="padding:.875rem 1rem">
+            <form action="/admin/users/{{ user.id }}/toggle" method="POST" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button type="submit" style="font-size:.75rem;padding:.25rem .625rem;border-radius:.375rem;cursor:pointer;
+                {% if user.is_active %}background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.3);color:#fb7185;{% else %}background:rgba(0,214,143,.1);border:1px solid rgba(0,214,143,.3);color:#00d68f;{% endif %}">
+                {{ 'Deactivate' if user.is_active else 'Activate' }}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="padding:3rem;text-align:center;color:var(--text-mid)">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.78rem;color:var(--text-lo);margin-top:.75rem">Showing {{ users|length }} users</p>
+</div>
+{% endblock %}

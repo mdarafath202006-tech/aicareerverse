@@ -152,3 +152,77 @@ def api_mark_read(nid):
         n.is_read = True
         db.session.commit()
     return jsonify({"ok": True})
+
+
+# ── Search ────────────────────────────────────────────────────────────────────
+@api_bp.route("/search")
+@login_required
+def global_search():
+    """Global search across users, jobs, companies, posts, communities."""
+    q = request.args.get("q", "").strip()[:100]
+    if not q or len(q) < 2:
+        return jsonify({"results": [], "query": q})
+
+    from app.models import Job, Post, Community, Company
+    from app.models.base import db as _db
+
+    results = []
+
+    # Users
+    users = (User.query.filter(
+        User.name.ilike(f"%{q}%") | User.email.ilike(f"%{q}%")
+    ).filter_by(is_active=True).limit(5).all())
+    for u in users:
+        results.append({"type": "user", "id": u.id, "title": u.name,
+                        "subtitle": u.role.title(),
+                        "url": f"/alumni/view/{u.alumni.id}" if u.alumni else f"/student/view/{u.student.id}" if u.student else "#"})
+
+    # Jobs
+    jobs = Job.query.filter(
+        Job.title.ilike(f"%{q}%") | Job.company.ilike(f"%{q}%") | Job.skills_required.ilike(f"%{q}%")
+    ).filter_by(is_active=True).limit(5).all()
+    for j in jobs:
+        results.append({"type": "job", "id": j.id, "title": j.title,
+                        "subtitle": f"{j.company} · {j.location or 'India'}",
+                        "url": "/jobs"})
+
+    # Companies
+    companies = Company.query.filter(
+        Company.name.ilike(f"%{q}%") | Company.industry.ilike(f"%{q}%")
+    ).limit(3).all()
+    for c in companies:
+        results.append({"type": "company", "id": c.id, "title": c.name,
+                        "subtitle": c.industry or "Technology",
+                        "url": f"/companies/{c.slug}"})
+
+    # Communities
+    communities = Community.query.filter(
+        Community.name.ilike(f"%{q}%") | Community.description.ilike(f"%{q}%")
+    ).limit(3).all()
+    for c in communities:
+        results.append({"type": "community", "id": c.id, "title": c.name,
+                        "subtitle": "Community",
+                        "url": f"/communities"})
+
+    return jsonify({"results": results, "query": q, "count": len(results)})
+
+
+# ── Feed Stats ─────────────────────────────────────────────────────────────────
+@api_bp.route("/feed/stats")
+@login_required
+def feed_stats():
+    from app.models import Post, Like
+    from app.models.base import db as _db
+    total_posts = Post.query.count()
+    my_likes    = Like.query.filter_by(user_id=session["user_id"]).count()
+    return jsonify({"total_posts": total_posts, "my_likes": my_likes})
+
+
+# ── Profile Completion ─────────────────────────────────────────────────────────
+@api_bp.route("/profile/completion")
+@login_required
+def profile_completion():
+    user = User.query.get(session["user_id"])
+    if not user:
+        return jsonify({"score": 0})
+    return jsonify({"score": user.profile_completion(), "name": user.name})

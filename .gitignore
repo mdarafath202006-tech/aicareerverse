@@ -2,48 +2,55 @@
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
+.Python
+*.egg
 *.egg-info/
 dist/
 build/
 .eggs/
+*.so
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Virtual environments
 venv/
-env/
 .venv/
+env/
+ENV/
 
-# Environment
+# Environment variables
 .env
-*.env.local
-
-# Database
-*.db
-*.sqlite3
-*.sql.dump
-
-# Node
-frontend/node_modules/
-frontend/dist/
+.env.local
+.env.production
 
 # Flask
 instance/
-app/static/react/
-uploads/
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-coverage.xml
+*.db
+flask_session/
 
 # IDE
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
+*.sublime-*
+
+# OS
 .DS_Store
+Thumbs.db
+desktop.ini
 
 # Docker
-docker-compose.override.yml
+.dockerignore
 
-# Celery
-celerybeat-schedule
-celerybeat.pid
+# Logs
+*.log
+logs/
+
+# Uploads
+uploads/
+static/uploads/

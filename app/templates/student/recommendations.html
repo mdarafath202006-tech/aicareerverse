@@ -1,112 +1,154 @@
 {% extends "layout_dash.html" %}
-{% block title %}AI Mentor Recommendations{% endblock %}
+{% block title %}AI Mentor Matching — AI CareerVerse{% endblock %}
+{% block page_title %}AI Mentor Matching{% endblock %}
 {% block content %}
-<div style="padding:1.5rem;max-width:80rem;margin:0 auto">
-  <div style="margin-bottom:1.5rem">
-    <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.5rem;color:#fff">🤖 AI Mentor Recommendations</h1>
-    <p style="color:#64748b;font-size:.875rem;margin-top:.25rem">Ranked by semantic similarity · skill overlap · industry alignment</p>
-  </div>
-  <!-- AI info banner -->
-  <div style="display:flex;align-items:start;gap:.75rem;padding:1rem;border-radius:.875rem;background:rgba(51,85,255,.06);border:1px solid rgba(51,85,255,.2);margin-bottom:1.5rem">
-    <span style="font-size:1.25rem;flex-shrink:0">✨</span>
+<div style="padding:1.75rem;max-width:80rem;margin:0 auto">
+  <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
     <div>
-      <p style="font-family:'Space Grotesk',sans-serif;font-weight:500;color:#90aeff;font-size:.875rem">Semantic AI Matching Active</p>
-      <p style="font-size:.75rem;color:#64748b;margin-top:.25rem">Using sentence embeddings to match your skills with alumni expertise — not just keywords.</p>
+      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:.3rem">
+        🤖 AI Mentor Matching
+      </h1>
+      <p style="color:var(--text-lo);font-size:.875rem">
+        Semantic AI-powered recommendations based on your skills & goals
+      </p>
+    </div>
+    {% if not student.get('skills') %}
+    <div style="display:flex;align-items:center;gap:.875rem;padding:.875rem 1.125rem;
+      border-radius:var(--radius-md);background:rgba(251,191,36,.06);
+      border:1px solid rgba(251,191,36,.15)">
+      <span style="font-size:1.25rem">⚠️</span>
+      <div>
+        <p style="font-family:'Syne',sans-serif;font-weight:600;color:#fbbf24;font-size:.82rem">Add your skills</p>
+        <p style="font-size:.75rem;color:#64748b">to get better AI matches</p>
+      </div>
+      <a href="/student/profile" class="btn btn-ghost btn-sm" style="text-decoration:none">Update →</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Filter bar -->
+  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <input placeholder="Filter by name, company, skill..." class="input" style="max-width:22rem"
+      id="filter-input" oninput="filterCards()"/>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      {% for tag in ['All','Hiring','Top Rated','Available'] %}
+      <button onclick="setFilter('{{ tag }}')" class="badge badge-brand"
+        style="cursor:pointer;border:none;padding:.4rem .9rem;font-size:.75rem;
+        transition:all .2s;{% if loop.first %}background:rgba(26,82,255,.25);{% endif %}">
+        {{ tag }}
+      </button>
+      {% endfor %}
     </div>
   </div>
 
-  {% if not student.get('skills') and not student.get('interests') %}
-  <div style="padding:3rem;text-align:center" class="card">
-    <p style="font-size:3rem;margin-bottom:1rem">👤</p>
-    <p style="color:#94a3b8;font-size:.875rem">Add your skills and interests in your <a href="/student/profile" style="color:#90aeff;text-decoration:none">profile</a> to get personalized recommendations.</p>
-  </div>
-  {% else %}
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(18rem,1fr));gap:1.25rem">
-    {% for rec in ranked %}
-    {% set a = rec.alumni %}
-    <div class="card" style="padding:1.25rem;transition:all .3s" onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='rgba(51,85,255,.4)'" onmouseout="this.style.transform='';this.style.borderColor=''">
-      <!-- Header -->
-      <div style="display:flex;align-items:start;gap:.875rem;margin-bottom:1rem">
-        <div style="width:3rem;height:3rem;border-radius:.875rem;background:linear-gradient(135deg,#3355ff,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.125rem;flex-shrink:0">
-          {{ a.name[0].upper() if a.name else '?' }}
+  {% if ranked %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr));gap:1.25rem" id="mentor-grid">
+    {% for item in ranked %}
+    {% set a = item.alumni %}
+    <div class="mentor-card card" style="overflow:hidden;transition:all .3s"
+      onmouseover="this.style.borderColor='rgba(26,82,255,.35)';this.style.transform='translateY(-4px)'"
+      onmouseout="this.style.borderColor='';this.style.transform=''">
+
+      <!-- Card header with gradient -->
+      <div style="height:4rem;background:linear-gradient(135deg,
+        rgba(26,82,255,.2),rgba(139,92,246,.15));
+        position:relative"></div>
+
+      <!-- Avatar overlapping -->
+      <div style="padding:0 1.25rem 1.25rem;margin-top:-1.75rem">
+        <div style="display:flex;align-items:end;justify-content:space-between;margin-bottom:1rem">
+          <div class="avatar" style="width:3.5rem;height:3.5rem;font-size:1.25rem;
+            border:3px solid var(--bg-surface);
+            background:linear-gradient(135deg,rgba(26,82,255,.3),rgba(139,92,246,.2))">
+            {{ a.get('name','?')[0].upper() }}
+          </div>
+          <div style="display:flex;gap:.375rem;align-items:center;padding-top:2rem">
+            {% if a.get('is_hiring') %}
+            <span class="badge badge-emerald" style="font-size:.65rem">🟢 Hiring</span>
+            {% endif %}
+            {% if item.percent and item.percent >= 80 %}
+            <span class="badge badge-brand" style="font-size:.65rem">⚡ Top Match</span>
+            {% endif %}
+          </div>
         </div>
-        <div style="flex:1;min-width:0">
-          <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:#fff;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name or 'Alumni' }}</h3>
-          <p style="font-size:.75rem;color:#64748b;margin-top:.125rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.job_role or '' }}{% if a.company %} @ {{ a.company }}{% endif %}</p>
-        </div>
-        {% if rec.percent > 0 %}
-        <div style="flex-shrink:0;text-align:center;padding:.5rem .75rem;border-radius:.75rem;background:{% if rec.percent >= 70 %}rgba(16,185,129,.1){% elif rec.percent >= 40 %}rgba(245,158,11,.1){% else %}rgba(244,63,94,.1){% endif %};border:1px solid {% if rec.percent >= 70 %}rgba(16,185,129,.2){% elif rec.percent >= 40 %}rgba(245,158,11,.2){% else %}rgba(244,63,94,.2){% endif %}">
-          <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.875rem;color:{% if rec.percent >= 70 %}#6ee7b7{% elif rec.percent >= 40 %}#fcd34d{% else %}#fda4af{% endif %}">{{ rec.percent }}%</p>
-          <p style="font-size:.625rem;color:#475569">match</p>
+
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.95rem;margin-bottom:.2rem">
+          {{ a.get('name','Unknown') }}
+        </h3>
+        <p style="font-size:.8rem;color:var(--text-lo);margin-bottom:.875rem">
+          {{ a.get('job_role','') }}{% if a.get('company') %} · {{ a.get('company') }}{% endif %}
+        </p>
+
+        <!-- Match score -->
+        {% if item.percent %}
+        <div style="margin-bottom:.875rem">
+          <div style="display:flex;justify-content:space-between;margin-bottom:.375rem">
+            <span style="font-size:.72rem;color:var(--text-lo);font-family:'Syne',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.08em">Match Score</span>
+            <span style="font-size:.82rem;font-family:'Syne',sans-serif;font-weight:800;
+              color:{% if item.percent >= 80 %}var(--emerald){% elif item.percent >= 60 %}var(--amber){% else %}var(--text-mid){% endif %}">
+              {{ item.percent }}%
+            </span>
+          </div>
+          <div class="progress">
+            <div class="progress-fill" style="width:{{ item.percent }}%;
+              background:{% if item.percent >= 80 %}linear-gradient(90deg,var(--emerald),var(--cyan)){% elif item.percent >= 60 %}linear-gradient(90deg,var(--amber),var(--emerald)){% else %}linear-gradient(90deg,var(--brand),var(--violet)){% endif %}">
+            </div>
+          </div>
         </div>
         {% endif %}
-      </div>
 
-      {% if a.location %}
-      <p style="font-size:.75rem;color:#475569;margin-bottom:.75rem">📍 {{ a.location }}</p>
-      {% endif %}
-
-      <!-- Matched skills -->
-      {% if rec.matched_skills %}
-      <div style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:.75rem">
-        {% for sk in rec.matched_skills[:4] %}<span class="badge badge-brand">{{ sk }}</span>{% endfor %}
-        {% if rec.matched_skills|length > 4 %}<span class="badge badge-brand">+{{ rec.matched_skills|length - 4 }}</span>{% endif %}
-      </div>
-      {% endif %}
-
-      <!-- Progress -->
-      {% if rec.percent > 0 %}
-      <div class="progress-bar" style="margin-bottom:.75rem">
-        <div class="progress-fill" style="width:{{ rec.percent }}%"></div>
-      </div>
-      {% endif %}
-
-      <!-- Hiring badge -->
-      {% if a.is_hiring %}<span class="badge badge-green" style="margin-bottom:.75rem">🚀 Hiring Now</span>{% endif %}
-
-      <!-- Actions -->
-      <div style="display:flex;gap:.5rem">
-        {% if a.linkedin %}
-        <a href="{{ a.linkedin }}" target="_blank" style="display:inline-flex;align-items:center;gap:.375rem;padding:.5rem .875rem;border-radius:.625rem;background:#172040;border:1px solid #1e2850;color:#94a3b8;font-size:.75rem;text-decoration:none;font-family:'Space Grotesk',sans-serif;transition:all .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">🔗 LinkedIn</a>
+        <!-- Matched skills -->
+        {% if item.matched_skills %}
+        <div style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:1rem">
+          {% for sk in item.matched_skills[:4] %}
+          <span class="chip">{{ sk }}</span>
+          {% endfor %}
+          {% if item.matched_skills|length > 4 %}
+          <span class="chip" style="color:var(--brand)">+{{ item.matched_skills|length - 4 }}</span>
+          {% endif %}
+        </div>
         {% endif %}
-        <button onclick="openModal({{ a.id }}, '{{ a.name or 'this mentor' }}')" class="btn-primary" style="flex:1;justify-content:center;font-size:.75rem;padding:.5rem">Request Mentor</button>
+
+        <!-- Bio snippet -->
+        {% if a.get('bio') %}
+        <p style="font-size:.78rem;color:var(--text-lo);line-height:1.55;margin-bottom:1rem;
+          display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+          {{ a.get('bio') }}
+        </p>
+        {% endif %}
+
+        <!-- Actions -->
+        <div style="display:flex;gap:.625rem">
+          <a href="/alumni/view/{{ a.get('alumni_id') or a.get('id') }}" class="btn btn-ghost btn-sm"
+            style="text-decoration:none;flex:1;justify-content:center">View Profile</a>
+          <form method="POST" action="/student/request_mentor/{{ a.get('alumni_id') or a.get('id') }}" style="flex:1">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+            <input type="hidden" name="message" value="Hi! I'd love to connect and learn from your experience."/>
+            <button type="submit" class="btn btn-primary btn-sm" style="width:100%">
+              Request Mentor
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
-    {% else %}
-    <div style="grid-column:1/-1;padding:3rem;text-align:center" class="card">
-      <p style="font-size:3rem;margin-bottom:1rem">🔍</p>
-      <p style="color:#94a3b8">No recommendations found. Update your profile with more skills.</p>
     </div>
     {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="card" style="padding:4rem;text-align:center">
+    <p style="font-size:3rem;margin-bottom:1rem">🤖</p>
+    <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:.625rem">No alumni available yet</h3>
+    <p style="color:var(--text-lo);font-size:.875rem">Alumni mentors will appear here once they join the platform.</p>
   </div>
   {% endif %}
 </div>
 
-<!-- Request modal -->
-<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;padding:1rem">
-  <div class="card" style="width:100%;max-width:26rem;padding:1.5rem">
-    <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;margin-bottom:.25rem">Request Mentorship</h3>
-    <p style="font-size:.875rem;color:#64748b;margin-bottom:1rem">Sending to <span id="modal-name" style="color:#90aeff"></span></p>
-    <form id="modal-form" method="POST">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
-      <textarea name="message" class="input" style="height:7rem;resize:none;margin-bottom:.5rem" placeholder="Introduce yourself and explain what you hope to learn..." maxlength="500"></textarea>
-      <p id="char-count" style="font-size:.7rem;color:#334155;text-align:right;margin-bottom:1rem">0/500</p>
-      <div style="display:flex;gap:.75rem">
-        <button type="button" onclick="closeModal()" class="btn-secondary" style="flex:1;justify-content:center">Cancel</button>
-        <button type="submit" class="btn-primary" style="flex:1;justify-content:center">Send Request</button>
-      </div>
-    </form>
-  </div>
-</div>
 <script>
-function openModal(id, name){
-  document.getElementById('modal').style.display='flex';
-  document.getElementById('modal-name').textContent=name;
-  document.getElementById('modal-form').action='/student/request_mentor/'+id;
+function filterCards() {
+  const q = document.getElementById('filter-input').value.toLowerCase();
+  document.querySelectorAll('.mentor-card').forEach(c => {
+    c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
 }
-function closeModal(){ document.getElementById('modal').style.display='none'; }
-document.querySelector('[name="message"]')?.addEventListener('input',function(){
-  document.getElementById('char-count').textContent=this.value.length+'/500';
-});
 </script>
 {% endblock %}

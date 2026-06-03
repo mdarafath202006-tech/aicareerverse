@@ -1,0 +1,137 @@
+{% extends "layout_dash.html" %}
+{% block title %}AI Career Roadmap — AI CareerVerse{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:900px;margin:0 auto">
+  <div style="margin-bottom:1.5rem">
+    <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f1f5f9">🗺️ AI Career Roadmap Generator</h1>
+    <p style="color:var(--text-mid);font-size:.85rem">Get a personalized, phase-by-phase career growth plan with goals, projects, and certifications</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:360px 1fr;gap:1.5rem;align-items:start">
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;position:sticky;top:1rem">
+      <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.25rem">
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Current Role / Status</label>
+          <input type="text" id="current-role" value="Final Year CS Student"
+            style="width:100%;padding:.75rem 1rem;background:var(--bg-raised);border:1px solid var(--border);border-radius:.75rem;color:#f1f5f9;font-size:.85rem;outline:none"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Target Role *</label>
+          <input type="text" id="target-role" placeholder="e.g. Senior Software Engineer at Google"
+            style="width:100%;padding:.75rem 1rem;background:var(--bg-raised);border:1px solid var(--border);border-radius:.75rem;color:#f1f5f9;font-size:.9rem;outline:none"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Current Skills</label>
+          <textarea id="skills" rows="3" placeholder="Python, React, SQL..."
+            style="width:100%;padding:.75rem 1rem;background:var(--bg-raised);border:1px solid var(--border);border-radius:.75rem;color:#f1f5f9;font-size:.85rem;outline:none;resize:none"></textarea>
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Timeline</label>
+          <select id="timeline" style="width:100%;padding:.75rem 1rem;background:var(--bg-raised);border:1px solid var(--border);border-radius:.75rem;color:#f1f5f9;font-size:.85rem;outline:none">
+            <option value="6 months">6 months</option>
+            <option value="12 months" selected>12 months</option>
+            <option value="18 months">18 months</option>
+            <option value="2 years">2 years</option>
+          </select>
+        </div>
+      </div>
+      <button onclick="generateRoadmap()" id="gen-btn"
+        style="width:100%;background:linear-gradient(135deg,#1a52ff,#8b5cf6);color:#fff;border:none;padding:.875rem;border-radius:.875rem;font-weight:700;font-size:.9rem;cursor:pointer">
+        Generate My Roadmap →
+      </button>
+    </div>
+
+    <div id="roadmap-area">
+      <div style="background:var(--bg-surface);border:1px dashed var(--border);border-radius:1rem;padding:4rem 2rem;text-align:center">
+        <div style="font-size:3.5rem;margin-bottom:1rem">🗺️</div>
+        <p style="color:#f1f5f9;font-weight:600;margin-bottom:.5rem">Your personalized roadmap awaits</p>
+        <p style="color:var(--text-mid);font-size:.85rem">Fill in your details and generate a step-by-step career plan with projects, certifications, and daily habits.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const phaseColors = ['#00e5ff','#8b5cf6','#fbbf24','#00d68f','#fb7185'];
+
+async function generateRoadmap() {
+  const current = document.getElementById('current-role').value.trim();
+  const target  = document.getElementById('target-role').value.trim();
+  const skills  = document.getElementById('skills').value.trim();
+  const tl      = document.getElementById('timeline').value;
+  if (!target) { alert('Please enter your target role.'); return; }
+
+  const btn = document.getElementById('gen-btn');
+  btn.textContent = 'Generating... 🔍';
+  btn.disabled = true;
+
+  const area = document.getElementById('roadmap-area');
+  area.innerHTML = `<div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:4rem;text-align:center"><div style="font-size:2rem;margin-bottom:1rem">⏳</div><p style="color:var(--text-mid)">AI is crafting your personalized roadmap...</p></div>`;
+
+  try {
+    const resp = await fetch('/ai/career-roadmap/generate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({current_role: current, target_role: target, skills, timeline: tl})
+    });
+    const d = await resp.json();
+
+    let html = `
+      <div style="background:linear-gradient(135deg,rgba(26,82,255,.2),rgba(139,92,246,.15));border:1px solid rgba(26,82,255,.3);border-radius:1rem;padding:1.5rem;margin-bottom:1.25rem">
+        <h2 style="font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#f1f5f9;margin-bottom:.5rem">${d.title || 'Your Career Roadmap'}</h2>
+        <p style="color:var(--text-mid);font-size:.85rem;line-height:1.6">${d.overview || ''}</p>
+      </div>`;
+
+    // Phases
+    if ((d.phases||[]).length) {
+      html += `<div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.25rem">`;
+      d.phases.forEach((phase, i) => {
+        const color = phaseColors[i % phaseColors.length];
+        html += `
+          <div style="background:var(--bg-surface);border:1px solid var(--border);border-left:3px solid ${color};border-radius:1rem;padding:1.25rem">
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem;flex-wrap:wrap">
+              <span style="font-size:.72rem;font-weight:800;color:${color};background:rgba(0,0,0,.3);padding:.25rem .625rem;border-radius:.375rem">${phase.phase || `Phase ${i+1}`}</span>
+              <span style="font-size:.8rem;font-weight:700;color:#f1f5f9">${phase.duration || ''}</span>
+              <span style="font-size:.75rem;color:var(--text-mid)">${phase.focus || ''}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem">
+              ${(phase.goals||[]).length ? `<div><p style="font-size:.72rem;font-weight:700;color:#00d68f;text-transform:uppercase;margin-bottom:.35rem">Goals</p><ul style="padding-left:.875rem">${phase.goals.map(g=>`<li style="color:var(--text-mid);font-size:.8rem;margin-bottom:.15rem">${g}</li>`).join('')}</ul></div>` : ''}
+              ${(phase.skills_to_learn||[]).length ? `<div><p style="font-size:.72rem;font-weight:700;color:#00e5ff;text-transform:uppercase;margin-bottom:.35rem">Skills to Learn</p><div style="display:flex;flex-wrap:wrap;gap:.25rem">${phase.skills_to_learn.map(s=>`<span style="background:rgba(0,229,255,.1);color:#00e5ff;padding:.15rem .5rem;border-radius:.3rem;font-size:.72rem">${s}</span>`).join('')}</div></div>` : ''}
+              ${(phase.projects||[]).length ? `<div><p style="font-size:.72rem;font-weight:700;color:#8b5cf6;text-transform:uppercase;margin-bottom:.35rem">Projects</p><ul style="padding-left:.875rem">${phase.projects.map(p=>`<li style="color:var(--text-mid);font-size:.8rem;margin-bottom:.15rem">${p}</li>`).join('')}</ul></div>` : ''}
+              ${(phase.certifications||[]).length ? `<div><p style="font-size:.72rem;font-weight:700;color:#fbbf24;text-transform:uppercase;margin-bottom:.35rem">Certifications</p><ul style="padding-left:.875rem">${phase.certifications.map(c=>`<li style="color:var(--text-mid);font-size:.8rem;margin-bottom:.15rem">${c}</li>`).join('')}</ul></div>` : ''}
+            </div>
+            ${(phase.milestones||[]).length ? `<div style="margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--border)"><p style="font-size:.72rem;font-weight:700;color:${color};text-transform:uppercase;margin-bottom:.35rem">🏆 Milestones</p><div style="display:flex;flex-wrap:wrap;gap:.35rem">${phase.milestones.map(m=>`<span style="background:rgba(0,0,0,.3);border:1px solid ${color}33;color:#f1f5f9;padding:.2rem .625rem;border-radius:.375rem;font-size:.75rem">${m}</span>`).join('')}</div></div>` : ''}
+          </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Daily habits + Weekly goals side by side
+    if ((d.daily_habits||[]).length || (d.weekly_goals||[]).length) {
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">`;
+      if ((d.daily_habits||[]).length) {
+        html += `<div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.25rem"><p style="font-size:.8rem;font-weight:700;color:#00d68f;margin-bottom:.75rem">☀️ Daily Habits</p><ul style="padding-left:1rem">${d.daily_habits.map(h=>`<li style="color:var(--text-mid);font-size:.82rem;margin-bottom:.3rem">${h}</li>`).join('')}</ul></div>`;
+      }
+      if ((d.weekly_goals||[]).length) {
+        html += `<div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.25rem"><p style="font-size:.8rem;font-weight:700;color:#8b5cf6;margin-bottom:.75rem">📅 Weekly Goals</p><ul style="padding-left:1rem">${d.weekly_goals.map(g=>`<li style="color:var(--text-mid);font-size:.82rem;margin-bottom:.3rem">${g}</li>`).join('')}</ul></div>`;
+      }
+      html += `</div>`;
+    }
+
+    // Resources
+    if ((d.resources||[]).length) {
+      html += `<div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.25rem;margin-bottom:1.25rem"><p style="font-size:.8rem;font-weight:700;color:#fbbf24;margin-bottom:.875rem">📚 Recommended Resources</p><div style="display:flex;flex-direction:column;gap:.5rem">`;
+      d.resources.forEach(r => {
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-raised);border-radius:.5rem;padding:.625rem .875rem;flex-wrap:wrap;gap:.5rem"><div><p style="color:#f1f5f9;font-size:.82rem;font-weight:600">${r.name||''}</p><p style="font-size:.72rem;color:var(--text-lo)">${r.type||''}</p></div>${r.url?`<a href="${r.url}" target="_blank" style="font-size:.75rem;color:#1a52ff;text-decoration:none">Open →</a>`:''}</div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    area.innerHTML = html;
+  } catch(e) {
+    area.innerHTML = `<div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:2rem;text-align:center"><p style="color:#fb7185">Generation failed. Please try again.</p></div>`;
+  }
+  btn.textContent = 'Generate My Roadmap →';
+  btn.disabled = false;
+}
+</script>
+{% endblock %}

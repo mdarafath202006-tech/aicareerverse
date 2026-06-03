@@ -1,52 +1,120 @@
 {% extends "layout_dash.html" %}
-{% block title %}Alumni Profile{% endblock %}
+{% block title %}Alumni Profile — AI CareerVerse{% endblock %}
+{% block page_title %}My Profile{% endblock %}
 {% block content %}
-<div style="padding:1.5rem;max-width:40rem;margin:0 auto">
-  <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.5rem;color:#fff;margin-bottom:1.5rem">👤 Alumni Profile</h1>
-  <div class="card" style="padding:1.5rem">
-    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid #172040">
-      <div style="width:4rem;height:4rem;border-radius:1rem;background:linear-gradient(135deg,#7c3aed,#3355ff);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.5rem">
-        {{ session.get('name','U')[0].upper() }}
-      </div>
-      <div>
-        <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;font-size:1.125rem">{{ session.get('name','') }}</p>
-        <p style="font-size:.875rem;color:#64748b">Alumni Mentor</p>
+<div style="padding:1.75rem;max-width:68rem;margin:0 auto">
+  <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:2rem">My Profile</h1>
+
+  <div style="display:grid;grid-template-columns:1fr 1.8fr;gap:1.5rem">
+    <!-- Profile card -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem">
+      <div class="card" style="padding:1.5rem;text-align:center">
+        <div class="avatar" style="width:5rem;height:5rem;font-size:1.75rem;margin:0 auto 1rem;
+          box-shadow:0 0 32px rgba(26,82,255,.35)">
+          {{ session.get('name','U')[0].upper() }}
+        </div>
+        <h2 style="font-family:'Syne',sans-serif;font-weight:800;color:#f1f5f9;font-size:1.125rem;margin-bottom:.25rem">
+          {{ session.get('name','') }}
+        </h2>
+        <p style="font-size:.8rem;color:var(--text-lo);margin-bottom:.5rem">
+          {{ profile.get('job_role','') }}{% if profile.get('company') %} · {{ profile.get('company') }}{% endif %}
+        </p>
+        {% if profile.get('location') %}
+        <p style="font-size:.78rem;color:var(--text-lo);margin-bottom:.875rem">📍 {{ profile.get('location') }}</p>
+        {% endif %}
+        <span class="badge badge-violet">Alumni</span>
+
+        {% if profile.get('is_hiring') %}
+        <div style="margin-top:.875rem">
+          <span class="badge badge-emerald">🟢 Currently Hiring</span>
+        </div>
+        {% endif %}
+
+        <div class="divider" style="margin:1.25rem 0"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;text-align:center">
+          <div>
+            <p style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:#f1f5f9">
+              {{ profile.get('mentorship_slots',3) }}
+            </p>
+            <p style="font-size:.72rem;color:var(--text-lo);text-transform:uppercase;letter-spacing:.06em">Slots</p>
+          </div>
+          <div>
+            <p style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:#f1f5f9">
+              {{ profile.get('impact_score',0) }}
+            </p>
+            <p style="font-size:.72rem;color:var(--text-lo);text-transform:uppercase;letter-spacing:.06em">Impact</p>
+          </div>
+        </div>
       </div>
     </div>
-    <form method="POST" action="/alumni/profile">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
-        <div>
-          <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Company</label>
-          <input type="text" name="company" class="input" placeholder="Google" value="{{ profile.get('company','') }}"/>
+
+    <!-- Edit form -->
+    <div class="card" style="padding:1.75rem">
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:1.5rem;font-size:1rem">Edit Profile</h3>
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div>
+            <label class="field-label">Company</label>
+            <input class="input" name="company" value="{{ profile.get('company','') }}" placeholder="Google"/>
+          </div>
+          <div>
+            <label class="field-label">Job Title</label>
+            <input class="input" name="job_role" value="{{ profile.get('job_role','') }}" placeholder="Software Engineer"/>
+          </div>
         </div>
-        <div>
-          <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Job Role</label>
-          <input type="text" name="job_role" class="input" placeholder="Software Engineer" value="{{ profile.get('job_role','') }}"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div>
+            <label class="field-label">Graduation Year</label>
+            <input class="input" type="number" name="graduation_year" value="{{ profile.get('graduation_year','') }}" placeholder="2020"/>
+          </div>
+          <div>
+            <label class="field-label">Location</label>
+            <input class="input" name="location" value="{{ profile.get('location','') }}" placeholder="Bangalore, India"/>
+          </div>
         </div>
-      </div>
-      <div style="margin-bottom:1rem">
-        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Skills</label>
-        <textarea name="skills" class="input" style="height:5rem;resize:none" placeholder="Python, React, System Design...">{{ profile.get('skills','') }}</textarea>
-      </div>
-      <div style="margin-bottom:1rem">
-        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Location</label>
-        <input type="text" name="location" class="input" placeholder="San Francisco, CA" value="{{ profile.get('location','') }}"/>
-      </div>
-      <div style="margin-bottom:1rem">
-        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">LinkedIn URL</label>
-        <input type="url" name="linkedin" class="input" placeholder="https://linkedin.com/in/..." value="{{ profile.get('linkedin','') }}"/>
-      </div>
-      <div style="margin-bottom:1rem">
-        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Bio</label>
-        <textarea name="bio" class="input" style="height:7rem;resize:none" placeholder="Share your journey and what you can offer as a mentor..." maxlength="1000">{{ profile.get('bio','') }}</textarea>
-      </div>
-      <div style="display:flex;align-items:center;gap:.75rem;padding:1rem;border-radius:.875rem;background:#111d35;border:1px solid #1e2850;margin-bottom:1.5rem">
-        <input type="checkbox" name="is_hiring" id="is_hiring" {% if profile.get('is_hiring') %}checked{% endif %} style="width:1rem;height:1rem;accent-color:#3355ff"/>
-        <label for="is_hiring" style="font-size:.875rem;color:#cbd5e1;cursor:pointer">My company is currently hiring — let students know!</label>
-      </div>
-      <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:.875rem">💾 Save Profile</button>
-    </form>
+        <div style="margin-bottom:1rem">
+          <label class="field-label">Skills</label>
+          <input class="input" name="skills" value="{{ profile.get('skills','') }}" placeholder="Python, System Design, Leadership"/>
+        </div>
+        <div style="margin-bottom:1rem">
+          <label class="field-label">Domain / Specialization</label>
+          <input class="input" name="domain" value="{{ profile.get('domain','') }}" placeholder="AI/ML, Backend, Product"/>
+        </div>
+        <div style="margin-bottom:1rem">
+          <label class="field-label">Bio</label>
+          <textarea class="input" name="bio" rows="3" placeholder="Your professional story...">{{ profile.get('bio','') }}</textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div>
+            <label class="field-label">LinkedIn</label>
+            <input class="input" name="linkedin" value="{{ profile.get('linkedin','') }}" placeholder="https://linkedin.com/in/you"/>
+          </div>
+          <div>
+            <label class="field-label">Mentorship Slots</label>
+            <input class="input" type="number" name="mentorship_slots" value="{{ profile.get('mentorship_slots',3) }}" min="0" max="20"/>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;padding:.875rem 1rem;
+          border-radius:var(--radius-md);background:var(--bg-raised);border:1px solid var(--border)">
+          <input type="checkbox" name="is_hiring" id="is_hiring"
+            {% if profile.get('is_hiring') %}checked{% endif %}
+            style="width:1.125rem;height:1.125rem;accent-color:var(--brand)"/>
+          <label for="is_hiring" style="font-size:.875rem;color:var(--text-mid);font-family:'Syne',sans-serif;font-weight:500;cursor:pointer">
+            I'm currently hiring / open to referrals
+          </label>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:.875rem">
+          <button type="reset" class="btn btn-ghost">Reset</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
+
+<style>
+.field-label { display:block;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;color:var(--text-lo);margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.08em; }
+textarea.input { resize:vertical;min-height:5rem; }
+</style>
 {% endblock %}

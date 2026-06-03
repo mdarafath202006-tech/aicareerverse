@@ -10,17 +10,18 @@ class AlumniRepository:
 
     @staticmethod
     def get_all_with_users() -> list[dict]:
-        """Return all alumni joined with user names/emails."""
         rows = (
             db.session.query(Alumni, User)
             .join(User, Alumni.user_id == User.id)
+            .filter(User.is_active == True)
             .all()
         )
         result = []
         for alum, user in rows:
             d = alum.to_dict()
-            d["name"]  = user.name
-            d["email"] = user.email
+            d["name"]      = user.name
+            d["email"]     = user.email
+            d["alumni_id"] = alum.id
             result.append(d)
         return result
 
@@ -36,8 +37,9 @@ class AlumniRepository:
             return None
         alum, user = row
         d = alum.to_dict()
-        d["name"]  = user.name
-        d["email"] = user.email
+        d["name"]      = user.name
+        d["email"]     = user.email
+        d["alumni_id"] = alum.id
         return d
 
     @staticmethod
@@ -50,6 +52,7 @@ class AlumniRepository:
                     User.name.ilike(like),
                     Alumni.job_role.ilike(like),
                     Alumni.skills.ilike(like),
+                    Alumni.company.ilike(like),
                 )
             )
         if skill:
@@ -59,8 +62,9 @@ class AlumniRepository:
         results = []
         for alum, user in q.all():
             d = alum.to_dict()
-            d["name"]  = user.name
-            d["email"] = user.email
+            d["name"]      = user.name
+            d["email"]     = user.email
+            d["alumni_id"] = alum.id
             results.append(d)
         return results
 
@@ -86,7 +90,9 @@ class AlumniRepository:
 
     @staticmethod
     def distinct_roles() -> list[str]:
-        rows = db.session.query(Alumni.job_role).filter(
-            Alumni.job_role.isnot(None)
-        ).distinct().order_by(Alumni.job_role).all()
+        rows = (db.session.query(Alumni.job_role)
+                .filter(Alumni.job_role.isnot(None))
+                .distinct()
+                .order_by(Alumni.job_role)
+                .all())
         return [r[0] for r in rows if r[0]]

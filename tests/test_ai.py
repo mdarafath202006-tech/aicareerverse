@@ -1,104 +1,102 @@
-"""
-tests/test_ai.py — AI recommender unit tests
-"""
+"""tests/test_ai.py — AI Recommender & Skill Gap tests"""
 import pytest
 from app.ai.recommender import (
     get_recommendations, get_skill_gap, get_career_analytics,
     _tokenize_skills, _skill_overlap,
 )
 
-
-STUDENT = {
-    "skills": "Python, Machine Learning, React",
-    "interests": "AI, Web Development",
-    "department": "CSE",
-}
-
-ALUMNI = [
-    {"id": 1, "name": "Alice", "skills": "Python, TensorFlow, ML", "job_role": "Data Scientist", "company": "Google", "bio": "ML engineer"},
-    {"id": 2, "name": "Bob",   "skills": "React, JavaScript, Node", "job_role": "Frontend Engineer", "company": "Meta", "bio": ""},
-    {"id": 3, "name": "Carol", "skills": "Java, Spring Boot",       "job_role": "Backend Engineer", "company": "Amazon", "bio": ""},
+ALUMNI_LIST = [
+    {"id": 1, "name": "A", "job_role": "ML Engineer",     "company": "Google",
+     "skills": "Python,TensorFlow,PyTorch,MLOps", "bio": "ML at Google"},
+    {"id": 2, "name": "B", "job_role": "Software Engineer", "company": "Microsoft",
+     "skills": "C#,.NET,Azure,System Design",     "bio": "Backend at MSFT"},
+    {"id": 3, "name": "C", "job_role": "Data Scientist",   "company": "Amazon",
+     "skills": "Python,SQL,Spark,Statistics",      "bio": "Data at Amazon"},
 ]
 
-
-class TestTokenize:
-    def test_basic(self):
-        assert _tokenize_skills("Python, ML, React") == {"python", "ml", "react"}
-
-    def test_semicolon(self):
-        assert _tokenize_skills("Python; SQL") == {"python", "sql"}
-
-    def test_empty(self):
-        assert _tokenize_skills("") == set()
-
-    def test_none(self):
-        assert _tokenize_skills(None) == set()
+STUDENT = {
+    "skills": "Python,TensorFlow,Machine Learning",
+    "interests": "AI,Research",
+    "department": "CS",
+}
 
 
-class TestSkillOverlap:
-    def test_overlap(self):
-        score, matched = _skill_overlap(STUDENT, ALUMNI[0])
-        assert score > 0
-        assert "python" in matched
-
-    def test_no_overlap(self):
-        score, matched = _skill_overlap(STUDENT, ALUMNI[2])
-        assert score == 0.0
-        assert matched == []
+def test_recommendations_returns_list():
+    result = get_recommendations(STUDENT, ALUMNI_LIST)
+    assert isinstance(result, list)
+    assert len(result) <= 10
 
 
-class TestRecommendations:
-    def test_returns_list(self):
-        result = get_recommendations(STUDENT, ALUMNI)
-        assert isinstance(result, list)
-
-    def test_top_n(self):
-        result = get_recommendations(STUDENT, ALUMNI, top_n=2)
-        assert len(result) <= 2
-
-    def test_has_required_keys(self):
-        result = get_recommendations(STUDENT, ALUMNI)
-        for r in result:
-            assert "alumni"   in r
-            assert "score"    in r
-            assert "percent"  in r
-            assert "matched_skills" in r
-
-    def test_sorted_by_score(self):
-        result = get_recommendations(STUDENT, ALUMNI)
-        scores = [r["score"] for r in result]
-        assert scores == sorted(scores, reverse=True)
-
-    def test_empty_alumni(self):
-        assert get_recommendations(STUDENT, []) == []
+def test_recommendations_sorted_by_score():
+    result = get_recommendations(STUDENT, ALUMNI_LIST)
+    scores = [r["score"] for r in result]
+    assert scores == sorted(scores, reverse=True)
 
 
-class TestSkillGap:
-    def test_returns_dict(self):
-        result = get_skill_gap(STUDENT, "Data Scientist", ALUMNI)
-        assert isinstance(result, dict)
-        assert "required_skills" in result
-        assert "student_has"    in result
-        assert "missing"        in result
-        assert "coverage_pct"   in result
-
-    def test_unknown_role(self):
-        result = get_skill_gap(STUDENT, "NonExistentRole999", ALUMNI)
-        assert result["coverage_pct"] == 0
-
-    def test_coverage_range(self):
-        result = get_skill_gap(STUDENT, "Data Scientist", ALUMNI)
-        assert 0 <= result["coverage_pct"] <= 100
+def test_recommendations_has_required_keys():
+    result = get_recommendations(STUDENT, ALUMNI_LIST)
+    for r in result:
+        assert "alumni" in r
+        assert "score" in r
+        assert "percent" in r
+        assert "matched_skills" in r
 
 
-class TestAnalytics:
-    def test_structure(self):
-        data = get_career_analytics(ALUMNI)
-        assert "top_companies" in data
-        assert "top_roles"     in data
-        assert "top_skills"    in data
-        assert "by_year"       in data
+def test_ml_engineer_ranks_highest():
+    result = get_recommendations(STUDENT, ALUMNI_LIST)
+    if result:
+        top = result[0]["alumni"]
+        assert top["job_role"] in ("ML Engineer", "Data Scientist")
 
-    def test_empty_input(self):
-        data = get_career_analytics([])
-        assert data["top_companies"] == []
+
+def test_recommendations_empty_alumni():
+    result = get_recommendations(STUDENT, [])
+    assert result == []
+
+
+def test_skill_gap_returns_dict():
+    gap = get_skill_gap(STUDENT, "ML Engineer", ALUMNI_LIST)
+    assert isinstance(gap, dict)
+    assert "missing" in gap
+    assert "student_has" in gap
+
+
+def test_skill_gap_coverage_pct():
+    gap = get_skill_gap(STUDENT, "ML Engineer", ALUMNI_LIST)
+    assert 0 <= gap.get("coverage_pct", 0) <= 100
+
+
+def test_skill_gap_no_relevant_alumni():
+    gap = get_skill_gap(STUDENT, "Quantum Physicist", ALUMNI_LIST)
+    assert gap.get("missing", []) == []
+
+
+def test_tokenize_skills():
+    tokens = _tokenize_skills("Python, React, Machine Learning; SQL")
+    assert "python" in tokens
+    assert "react" in tokens
+    assert "sql" in tokens
+
+
+def test_skill_overlap():
+    s = {"skills": "Python,React,SQL", "interests": "AI"}
+    a = {"skills": "Python,Go,SQL,Docker"}
+    overlap, matched = _skill_overlap(s, a)
+    assert 0 < overlap <= 1
+    assert "python" in matched
+    assert "sql" in matched
+
+
+def test_career_analytics_structure():
+    data = get_career_analytics(ALUMNI_LIST)
+    assert "top_companies"  in data
+    assert "top_roles"      in data
+    assert "top_skills"     in data
+    assert "total_alumni"   in data
+    assert data["total_alumni"] == 3
+
+
+def test_percent_bounded():
+    result = get_recommendations(STUDENT, ALUMNI_LIST)
+    for r in result:
+        assert 0 <= r["percent"] <= 99

@@ -1,0 +1,84 @@
+{% extends "layout_dash.html" %}
+{% block title %}Knowledge Base — AI CareerVerse{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:1000px;margin:0 auto">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f1f5f9">Knowledge Base</h1>
+      <p style="color:var(--text-mid);font-size:.85rem;margin-top:.25rem">Alumni wisdom, interview experiences & career guides</p>
+    </div>
+    <a href="/knowledge/create" style="background:linear-gradient(135deg,#1a52ff,#8b5cf6);color:#fff;padding:.6rem 1.2rem;border-radius:.75rem;text-decoration:none;font-weight:600;font-size:.85rem">
+      + Share Story
+    </a>
+  </div>
+
+  <!-- Search + Filter -->
+  <form method="GET" style="display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search stories, companies, roles..." 
+      style="flex:1;min-width:200px;padding:.6rem 1rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:.75rem;color:#f1f5f9;font-size:.85rem;outline:none"/>
+    <select name="category" style="padding:.6rem 1rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:.75rem;color:#f1f5f9;font-size:.85rem;outline:none">
+      <option value="">All Categories</option>
+      {% for cat_val, cat_label in categories %}
+      <option value="{{ cat_val }}" {% if selected_category == cat_val %}selected{% endif %}>{{ cat_label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" style="padding:.6rem 1rem;background:rgba(26,82,255,.2);border:1px solid rgba(26,82,255,.4);color:#4d7bff;border-radius:.75rem;font-size:.85rem;font-weight:600;cursor:pointer">Search</button>
+  </form>
+
+  <!-- Category Pills -->
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
+    <a href="/knowledge/" style="padding:.3rem .75rem;border-radius:2rem;font-size:.78rem;font-weight:600;text-decoration:none;{% if not selected_category %}background:rgba(26,82,255,.2);color:#4d7bff;border:1px solid rgba(26,82,255,.4);{% else %}background:var(--bg-surface);color:var(--text-mid);border:1px solid var(--border);{% endif %}">All</a>
+    {% for cat_val, cat_label in categories %}
+    <a href="/knowledge/?category={{ cat_val }}" style="padding:.3rem .75rem;border-radius:2rem;font-size:.78rem;font-weight:600;text-decoration:none;{% if selected_category == cat_val %}background:rgba(26,82,255,.2);color:#4d7bff;border:1px solid rgba(26,82,255,.4);{% else %}background:var(--bg-surface);color:var(--text-mid);border:1px solid var(--border);{% endif %}">{{ cat_label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if entries %}
+  <div style="display:flex;flex-direction:column;gap:1rem">
+    {% for entry in entries %}
+    <a href="/knowledge/{{ entry.id }}" style="text-decoration:none">
+      <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.25rem;transition:all .2s"
+        onmouseover="this.style.borderColor='rgba(26,82,255,.5)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+        <div style="display:flex;align-items:start;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:.5rem;flex-wrap:wrap">
+              <span style="font-size:.72rem;padding:.2rem .6rem;border-radius:.375rem;
+                {% if entry.category == 'success_story' %}background:rgba(0,214,143,.1);color:#00d68f;
+                {% elif entry.category == 'interview_experience' %}background:rgba(139,92,246,.1);color:#8b5cf6;
+                {% elif entry.category == 'placement_story' %}background:rgba(0,229,255,.1);color:#00e5ff;
+                {% else %}background:rgba(251,191,36,.1);color:#fbbf24;{% endif %}">
+                {% for cat_val, cat_label in categories %}{% if cat_val == entry.category %}{{ cat_label }}{% endif %}{% endfor %}
+              </span>
+              {% if entry.company %}
+              <span style="font-size:.72rem;color:var(--text-lo)">{{ entry.company }}</span>
+              {% endif %}
+              {% if entry.role %}
+              <span style="font-size:.72rem;color:var(--text-lo)">• {{ entry.role }}</span>
+              {% endif %}
+            </div>
+            <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:.375rem">{{ entry.title }}</h3>
+            <p style="font-size:.82rem;color:var(--text-mid);line-height:1.5">{{ entry.content[:150] }}{% if entry.content|length > 150 %}...{% endif %}</p>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <p style="font-size:.75rem;color:var(--text-mid)">by {{ entry.author_name }}</p>
+            <p style="font-size:.72rem;color:var(--text-lo)">{{ entry.created_at[:10] if entry.created_at else '' }}</p>
+            <div style="display:flex;gap:.75rem;margin-top:.375rem;justify-content:flex-end">
+              <span style="font-size:.72rem;color:var(--text-lo)">👁 {{ entry.views }}</span>
+              <span style="font-size:.72rem;color:var(--text-lo)">👍 {{ entry.helpful_count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:4rem 2rem;background:var(--bg-surface);border-radius:1rem;border:1px dashed var(--border)">
+    <div style="font-size:3rem;margin-bottom:1rem">📚</div>
+    <h3 style="font-family:'Syne',sans-serif;font-size:1.2rem;color:#f1f5f9;margin-bottom:.5rem">No Stories Found</h3>
+    <p style="color:var(--text-mid)">Be the first to share your experience!</p>
+    <a href="/knowledge/create" style="display:inline-block;margin-top:1rem;background:linear-gradient(135deg,#1a52ff,#8b5cf6);color:#fff;padding:.6rem 1.5rem;border-radius:.75rem;text-decoration:none;font-weight:600;font-size:.85rem">Share Your Story</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "layout_dash.html" %}
+{% block title %}Projects — AI CareerVerse{% endblock %}
+{% block page_title %}Project Showcase{% endblock %}
+{% block content %}
+<div style="padding:1.75rem;max-width:80rem;margin:0 auto">
+  <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:.3rem">🚀 Project Showcase</h1>
+      <p style="color:var(--text-lo);font-size:.875rem">Discover and share projects built by the community</p>
+    </div>
+  </div>
+  {% if showcases %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr));gap:1.25rem">
+    {% for project, user in showcases %}
+    <div class="card" style="padding:1.5rem;transition:all .3s"
+      onmouseover="this.style.borderColor='rgba(26,82,255,.35)';this.style.transform='translateY(-4px)'"
+      onmouseout="this.style.borderColor='';this.style.transform=''">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
+        <div class="avatar" style="width:2.25rem;height:2.25rem;font-size:.85rem">{{ user.name[0] }}</div>
+        <div>
+          <p style="font-family:'Syne',sans-serif;font-weight:600;color:#f1f5f9;font-size:.82rem">{{ user.name }}</p>
+          <p style="font-size:.7rem;color:var(--text-lo)">{{ project.created_at.strftime('%b %Y') if project.created_at else '' }}</p>
+        </div>
+      </div>
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.95rem;margin-bottom:.5rem">{{ project.title }}</h3>
+      {% if project.description %}
+      <p style="font-size:.82rem;color:var(--text-lo);line-height:1.6;margin-bottom:.875rem;
+        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ project.description }}</p>
+      {% endif %}
+      {% if project.tech_stack %}
+      <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1rem">
+        {% for tech in project.tech_stack.split(',')[:4] %}
+        <span class="chip" style="font-size:.68rem">{{ tech.strip() }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div style="display:flex;gap:.625rem">
+        {% if project.github_url %}<a href="{{ project.github_url }}" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none">🐙 GitHub</a>{% endif %}
+        {% if project.demo_url %}<a href="{{ project.demo_url }}" target="_blank" class="btn btn-primary btn-sm" style="text-decoration:none">🚀 Demo</a>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card" style="padding:4rem;text-align:center">
+    <p style="font-size:2.5rem;margin-bottom:1rem">🚀</p>
+    <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:.5rem">No projects yet</h3>
+    <p style="color:var(--text-lo);font-size:.875rem">Projects will appear here after the platform is seeded.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

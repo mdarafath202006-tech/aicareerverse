@@ -1,0 +1,196 @@
+{% extends "layout_dash.html" %}
+{% block title %}Community Feed — AI CareerVerse{% endblock %}
+{% block page_title %}Community Feed{% endblock %}
+{% block content %}
+<div style="padding:1.75rem;max-width:60rem;margin:0 auto">
+
+  <!-- Post composer -->
+  <div class="card" style="padding:1.5rem;margin-bottom:1.75rem">
+    <div style="display:flex;align-items:start;gap:.875rem">
+      <div class="avatar" style="width:2.5rem;height:2.5rem;font-size:.9rem;flex-shrink:0">
+        {{ session.get('name','U')[0].upper() }}
+      </div>
+      <div style="flex:1">
+        <form method="POST" action="/feed/post" id="post-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+          <input type="hidden" name="post_type" id="post-type-val" value="text"/>
+          <textarea name="content" id="post-content"
+            placeholder="Share an achievement, opportunity, or thought..."
+            style="width:100%;background:var(--bg-raised);border:1px solid var(--border);
+              border-radius:var(--radius-md);padding:.875rem 1rem;color:#f1f5f9;
+              font-size:.9rem;font-family:'Outfit',sans-serif;resize:none;outline:none;
+              min-height:5rem;transition:all .2s;line-height:1.6"
+            onfocus="this.style.borderColor='var(--brand)'"
+            onblur="this.style.borderColor='var(--border)'"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+
+          <!-- Post type pills -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.875rem;flex-wrap:wrap;gap:.5rem">
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              {% for ptype,icon,label in [('text','💬','Post'),('achievement','🏆','Achievement'),('opportunity','💼','Opportunity'),('project','🚀','Project')] %}
+              <button type="button" onclick="setPostType('{{ ptype }}')"
+                id="pt-{{ ptype }}"
+                style="display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem;
+                  border-radius:9999px;border:1px solid var(--border);background:{% if ptype=='text' %}rgba(26,82,255,.15);color:#85a8ff;border-color:rgba(26,82,255,.3){% else %}var(--bg-raised);color:var(--text-lo){% endif %};
+                  font-size:.75rem;font-family:'Syne',sans-serif;font-weight:600;cursor:pointer;transition:all .2s">
+                {{ icon }} {{ label }}
+              </button>
+              {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Post →</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feed filters -->
+  <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    {% for f,label in [('all','All'),('achievement','Achievements'),('opportunity','Opportunities'),('project','Projects')] %}
+    <button onclick="filterFeed('{{ f }}')" id="ff-{{ f }}"
+      class="badge {% if loop.first %}badge-brand{% else %}badge-brand{% endif %}"
+      style="cursor:pointer;border:none;padding:.4rem .9rem;font-size:.75rem;
+        {% if not loop.first %}background:rgba(26,82,255,.06);color:var(--text-lo);{% endif %}">
+      {{ label }}
+    </button>
+    {% endfor %}
+  </div>
+
+  <!-- Posts -->
+  <div id="feed-container" style="display:flex;flex-direction:column;gap:1.25rem">
+    {% if posts %}
+    {% for post in posts %}
+    <article class="card feed-post" data-type="{{ post.post_type }}"
+      style="padding:1.5rem;transition:all .3s;animation:fadeUp .35s ease {{ loop.index * .04 }}s both">
+
+      <!-- Post header -->
+      <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:1rem">
+        <div style="display:flex;align-items:center;gap:.875rem">
+          <div class="avatar" style="width:2.75rem;height:2.75rem;font-size:1rem">
+            {{ post.author_name[0].upper() if post.author_name else '?' }}
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <p style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.9rem">
+                {{ post.author_name or 'Unknown' }}
+              </p>
+              <span class="badge {% if post.author_role=='alumni' %}badge-violet{% else %}badge-cyan{% endif %}" style="font-size:.62rem">
+                {{ post.author_role or 'user' }}
+              </span>
+              {% if post.post_type != 'text' %}
+              <span class="badge {% if post.post_type=='achievement' %}badge-amber{% elif post.post_type=='opportunity' %}badge-emerald{% else %}badge-brand{% endif %}" style="font-size:.62rem">
+                {% if post.post_type=='achievement' %}🏆{% elif post.post_type=='opportunity' %}💼{% elif post.post_type=='project' %}🚀{% endif %}
+                {{ post.post_type }}
+              </span>
+              {% endif %}
+            </div>
+            <p style="font-size:.72rem;color:var(--text-lo);margin-top:.1rem">
+              {{ post.created_at[:10] if post.created_at else '' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <p style="font-size:.9rem;color:#cbd5e1;line-height:1.75;margin-bottom:1rem;white-space:pre-wrap">{{ post.content }}</p>
+
+      <!-- Tags -->
+      {% if post.tags %}
+      <div style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:1rem">
+        {% for tag in post.tags.split(',') %}
+        <span style="font-size:.72rem;color:#85a8ff;font-family:'Syne',sans-serif;font-weight:600">#{{ tag.strip() }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Actions -->
+      <div style="display:flex;align-items:center;gap:1.5rem;padding-top:.875rem;border-top:1px solid var(--border)">
+        <form method="POST" action="/feed/like/{{ post.id }}" style="margin:0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+          <button type="submit" style="display:flex;align-items:center;gap:.4rem;background:none;
+            border:none;color:var(--text-lo);font-size:.82rem;cursor:pointer;transition:color .2s;
+            font-family:'Syne',sans-serif;font-weight:600;padding:.25rem .375rem;border-radius:.375rem"
+            onmouseover="this.style.color='var(--rose)'" onmouseout="this.style.color=''">
+            ❤️ {{ post.likes_count or 0 }}
+          </button>
+        </form>
+        <button onclick="toggleComments({{ post.id }})"
+          style="display:flex;align-items:center;gap:.4rem;background:none;
+            border:none;color:var(--text-lo);font-size:.82rem;cursor:pointer;transition:color .2s;
+            font-family:'Syne',sans-serif;font-weight:600"
+          onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color=''">
+          💬 {{ post.comments_count or 0 }}
+        </button>
+        <button style="display:flex;align-items:center;gap:.4rem;background:none;
+          border:none;color:var(--text-lo);font-size:.82rem;cursor:pointer;
+          font-family:'Syne',sans-serif;font-weight:600"
+          onclick="navigator.clipboard && navigator.clipboard.writeText(window.location.origin+'/post/{{ post.id }}')">
+          ↗️ Share
+        </button>
+      </div>
+
+      <!-- Comment box (hidden by default) -->
+      <div id="comment-box-{{ post.id }}" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+        <form method="POST" action="/feed/comment/{{ post.id }}" style="display:flex;gap:.625rem">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+          <input type="text" name="content" placeholder="Write a comment..."
+            class="input" style="flex:1;padding:.5rem .875rem;font-size:.82rem"/>
+          <button type="submit" class="btn btn-primary btn-sm">Post</button>
+        </form>
+      </div>
+    </article>
+    {% endfor %}
+
+    {% else %}
+    <div class="card" style="padding:4rem;text-align:center">
+      <p style="font-size:2.5rem;margin-bottom:1rem">📰</p>
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:.5rem">Feed is empty</h3>
+      <p style="color:var(--text-lo);font-size:.875rem">Be the first to share something with the community!</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function setPostType(t) {
+  document.getElementById('post-type-val').value = t;
+  ['text','achievement','opportunity','project'].forEach(p => {
+    const btn = document.getElementById('pt-'+p);
+    if (!btn) return;
+    if (p === t) {
+      btn.style.background = 'rgba(26,82,255,.15)';
+      btn.style.color = '#85a8ff';
+      btn.style.borderColor = 'rgba(26,82,255,.3)';
+    } else {
+      btn.style.background = 'var(--bg-raised)';
+      btn.style.color = 'var(--text-lo)';
+      btn.style.borderColor = 'var(--border)';
+    }
+  });
+}
+function toggleComments(id) {
+  const box = document.getElementById('comment-box-'+id);
+  if (box) {
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    if (box.style.display === 'block') box.querySelector('input')?.focus();
+  }
+}
+function filterFeed(type) {
+  document.querySelectorAll('.feed-post').forEach(p => {
+    p.style.display = (type === 'all' || p.dataset.type === type) ? '' : 'none';
+  });
+  // Update filter button styles
+  ['all','achievement','opportunity','project'].forEach(f => {
+    const btn = document.getElementById('ff-'+f);
+    if (!btn) return;
+    if (f === type) {
+      btn.style.background = 'rgba(26,82,255,.25)';
+      btn.style.color = '#85a8ff';
+    } else {
+      btn.style.background = 'rgba(26,82,255,.06)';
+      btn.style.color = 'var(--text-lo)';
+    }
+  });
+}
+</script>
+{% endblock %}

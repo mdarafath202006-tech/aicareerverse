@@ -1,0 +1,108 @@
+{% extends "layout_dash.html" %}
+{% block title %}Browse Alumni — AI CareerVerse{% endblock %}
+{% block content %}
+<div style="padding:1.5rem;max-width:1000px;margin:0 auto">
+  <div style="margin-bottom:1.5rem">
+    <h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f1f5f9">Browse Alumni</h1>
+    <p style="color:var(--text-mid);font-size:.875rem;margin-top:.25rem">Connect with alumni, request referrals, and find mentors across top companies</p>
+  </div>
+
+  <!-- Search / Filter Bar -->
+  <form method="GET" style="display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search by name, company, skills..."
+      style="flex:1;min-width:200px;padding:.65rem 1rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:.75rem;color:#f1f5f9;font-size:.875rem;outline:none"/>
+    <select name="domain" style="padding:.65rem 1rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:.75rem;color:#f1f5f9;font-size:.875rem;outline:none;min-width:160px">
+      <option value="">All Domains</option>
+      {% for d in domains %}
+      <option value="{{ d }}" {% if domain==d %}selected{% endif %}>{{ d }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" style="padding:.65rem 1.25rem;background:linear-gradient(135deg,#1a52ff,#8b5cf6);color:#fff;border:none;border-radius:.75rem;font-weight:600;font-size:.875rem;cursor:pointer">Search</button>
+    {% if q or domain %}
+    <a href="/alumni/search" style="padding:.65rem 1rem;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-mid);border-radius:.75rem;font-size:.875rem;text-decoration:none;display:flex;align-items:center">Clear</a>
+    {% endif %}
+  </form>
+
+  <!-- Result count -->
+  <p style="font-size:.8rem;color:var(--text-lo);margin-bottom:1rem">
+    Showing {{ results|length }} alumni{% if q %} for "{{ q }}"{% endif %}
+  </p>
+
+  <!-- Grid -->
+  {% if results %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+    {% for alum in results %}
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:1rem;padding:1.25rem;transition:all .25s;display:flex;flex-direction:column;gap:.875rem"
+      onmouseover="this.style.borderColor='rgba(26,82,255,.5)';this.style.transform='translateY(-2px)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:center;gap:.875rem">
+        <div style="width:3rem;height:3rem;border-radius:50%;background:linear-gradient(135deg,#1a52ff,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#fff;flex-shrink:0">
+          {{ alum.name[0].upper() if alum.name else 'A' }}
+        </div>
+        <div style="min-width:0">
+          <p style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ alum.name }}</p>
+          <p style="font-size:.78rem;color:var(--text-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ alum.job_role }} @ {{ alum.company }}</p>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div style="display:flex;gap:.375rem;flex-wrap:wrap">
+        {% if alum.domain %}
+        <span style="font-size:.72rem;padding:.2rem .55rem;border-radius:.375rem;background:rgba(139,92,246,.1);color:#8b5cf6;font-weight:500">{{ alum.domain }}</span>
+        {% endif %}
+        {% if alum.is_hiring %}
+        <span style="font-size:.72rem;padding:.2rem .55rem;border-radius:.375rem;background:rgba(0,214,143,.1);color:#00d68f;font-weight:500">🟢 Hiring</span>
+        {% endif %}
+        {% if alum.mentorship_slots and alum.mentorship_slots > 0 %}
+        <span style="font-size:.72rem;padding:.2rem .55rem;border-radius:.375rem;background:rgba(26,82,255,.1);color:#4d7bff;font-weight:500">Mentoring</span>
+        {% endif %}
+      </div>
+
+      <!-- Location / Year -->
+      <div style="display:flex;gap:1rem">
+        {% if alum.location %}
+        <p style="font-size:.75rem;color:var(--text-lo)">📍 {{ alum.location }}</p>
+        {% endif %}
+        {% if alum.graduation_year %}
+        <p style="font-size:.75rem;color:var(--text-lo)">🎓 {{ alum.graduation_year }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Skills -->
+      {% if alum.skills %}
+      <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+        {% for skill in alum.skills.split(',')[:4] %}
+        <span style="font-size:.7rem;padding:.15rem .5rem;border-radius:.3rem;background:var(--bg-raised);color:var(--text-mid)">{{ skill.strip() }}</span>
+        {% endfor %}
+        {% if alum.skills.split(',')|length > 4 %}
+        <span style="font-size:.7rem;padding:.15rem .5rem;border-radius:.3rem;background:var(--bg-raised);color:var(--text-lo)">+{{ alum.skills.split(',')|length - 4 }} more</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Actions -->
+      <div style="display:flex;gap:.5rem;margin-top:auto;padding-top:.25rem">
+        <a href="/alumni/view/{{ alum.id }}" style="flex:1;text-align:center;background:linear-gradient(135deg,rgba(26,82,255,.2),rgba(139,92,246,.15));border:1px solid rgba(26,82,255,.35);color:#4d7bff;padding:.55rem .75rem;border-radius:.625rem;font-size:.8rem;font-weight:600;text-decoration:none;transition:all .2s"
+          onmouseover="this.style.background='linear-gradient(135deg,rgba(26,82,255,.35),rgba(139,92,246,.3))'"
+          onmouseout="this.style.background='linear-gradient(135deg,rgba(26,82,255,.2),rgba(139,92,246,.15))'">
+          View Profile
+        </a>
+        {% if session.get('role') == 'student' and alum.is_hiring %}
+        <a href="/referrals/request/{{ alum.id }}" style="background:rgba(0,214,143,.1);border:1px solid rgba(0,214,143,.3);color:#00d68f;padding:.55rem .75rem;border-radius:.625rem;font-size:.8rem;font-weight:600;text-decoration:none"
+          title="Request Referral">🤝</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:4rem 2rem;background:var(--bg-surface);border:1px dashed var(--border);border-radius:1rem">
+    <div style="font-size:3rem;margin-bottom:1rem">🔍</div>
+    <h3 style="font-family:'Syne',sans-serif;font-size:1.1rem;color:#f1f5f9;margin-bottom:.5rem">No alumni found</h3>
+    <p style="color:var(--text-mid);font-size:.875rem">Try different search terms or clear the filters</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

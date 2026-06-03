@@ -1,94 +1,170 @@
 {% extends "base.html" %}
 {% block title %}Create Account — AI CareerVerse{% endblock %}
 {% block body %}
-<div style="min-height:100vh;background:#030407;display:flex;align-items:center;justify-content:center;padding:1.5rem;position:relative">
-  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(51,85,255,.2) 0%,transparent 60%)"></div>
+<div style="min-height:100vh;background:var(--bg-base);display:flex;align-items:center;
+  justify-content:center;padding:1.5rem;position:relative;overflow:hidden">
+
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(26,82,255,.15) 0%,transparent 60%)"></div>
+
+  <a href="/" style="position:absolute;top:1.5rem;left:1.5rem;
+    display:flex;align-items:center;gap:.5rem;
+    color:var(--text-mid);text-decoration:none;font-size:.875rem;
+    font-family:'Syne',sans-serif;font-weight:500">
+    ← Back to home
+  </a>
+
   <div style="position:relative;width:100%;max-width:28rem">
-    <div style="text-align:center;margin-bottom:2rem">
-      <a href="/" style="display:inline-flex;align-items:center;gap:.75rem;text-decoration:none">
-        <div style="width:2.5rem;height:2.5rem;border-radius:.875rem;background:linear-gradient(135deg,#3355ff,#7c3aed);display:flex;align-items:center;justify-content:center">🤖</div>
-        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff">AI CareerVerse</span>
-      </a>
-      <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.5rem;color:#fff;margin-top:1rem">Create your account</h1>
-    </div>
-    <div class="card" style="padding:2rem">
-      <!-- Role toggle -->
-      <div id="role-toggle" style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem;background:#111d35;border-radius:.875rem;padding:.25rem;margin-bottom:1.5rem">
-        <button type="button" onclick="setRole('student')" id="btn-student" style="padding:.625rem;border-radius:.75rem;border:none;background:#3355ff;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:.875rem;cursor:pointer;transition:all .2s">🎓 Student</button>
-        <button type="button" onclick="setRole('alumni')"  id="btn-alumni"  style="padding:.625rem;border-radius:.75rem;border:none;background:none;color:#64748b;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:.875rem;cursor:pointer;transition:all .2s">💼 Alumni</button>
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:1.75rem">
+      <div style="display:inline-flex;align-items:center;gap:.75rem;text-decoration:none">
+        <div style="width:2.75rem;height:2.75rem;border-radius:1rem;
+          background:linear-gradient(135deg,#1a52ff,#8b5cf6);
+          display:flex;align-items:center;justify-content:center;
+          box-shadow:0 0 24px rgba(26,82,255,.45)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+          </svg>
+        </div>
+        <span style="font-family:'Syne',sans-serif;font-weight:800;color:#f1f5f9">AI CareerVerse</span>
       </div>
+      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;
+        color:#f1f5f9;margin-top:1.25rem;margin-bottom:.375rem">Create your account</h1>
+      <p style="font-size:.875rem;color:var(--text-lo)">Join AI CareerVerse today</p>
+    </div>
+
+    <div class="card-glow" style="padding:2rem">
+      <!-- Role toggle -->
+      <div style="background:var(--bg-base);border-radius:var(--radius-md);
+        padding:.25rem;margin-bottom:1.5rem;display:grid;grid-template-columns:1fr 1fr">
+        <button type="button" onclick="setRole('student')" id="btn-student"
+          style="padding:.625rem;border-radius:calc(var(--radius-md) - .125rem);border:none;
+          background:var(--brand);color:#fff;font-family:'Syne',sans-serif;
+          font-weight:700;font-size:.875rem;cursor:pointer;transition:all .2s">
+          🎓 Student
+        </button>
+        <button type="button" onclick="setRole('alumni')" id="btn-alumni"
+          style="padding:.625rem;border-radius:calc(var(--radius-md) - .125rem);border:none;
+          background:none;color:var(--text-lo);font-family:'Syne',sans-serif;
+          font-weight:700;font-size:.875rem;cursor:pointer;transition:all .2s">
+          💼 Alumni
+        </button>
+      </div>
+
       <form method="POST" action="/register">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
-        <input type="hidden" name="role" id="role-input" value="student"/>
+        <input type="hidden" name="role" id="role-input" value="{{ request.args.get('role','student') }}"/>
+
         <div style="margin-bottom:1rem">
-          <label style="display:block;font-size:.75rem;color:#64748b;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em">Full Name</label>
-          <input class="input" type="text" name="name" placeholder="Alex Johnson" required/>
+          <label class="field-label">Full Name</label>
+          <input class="input" type="text" name="name" placeholder="Alex Johnson" required autocomplete="name"/>
         </div>
         <div style="margin-bottom:1rem">
-          <label style="display:block;font-size:.75rem;color:#64748b;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em">Email</label>
-          <input class="input" type="email" name="email" placeholder="you@example.com" required/>
+          <label class="field-label">Email Address</label>
+          <input class="input" type="email" name="email" placeholder="you@example.com" required autocomplete="email"/>
         </div>
         <div style="margin-bottom:1rem">
-          <label style="display:block;font-size:.75rem;color:#64748b;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em">Password</label>
-          <input class="input" type="password" name="password" placeholder="Min 8 chars, 1 uppercase, 1 number" required/>
+          <label class="field-label">Password</label>
+          <input class="input" type="password" name="password" placeholder="Min 8 chars, 1 uppercase, 1 number" required autocomplete="new-password"/>
         </div>
-        <!-- Student fields -->
+
+        <!-- Student-specific fields -->
         <div id="student-fields">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
             <div>
-              <label style="display:block;font-size:.75rem;color:#64748b;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em">Department</label>
+              <label class="field-label">Department</label>
               <input class="input" type="text" name="department" placeholder="CSE"/>
             </div>
             <div>
-              <label style="display:block;font-size:.75rem;color:#64748b;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em">Year</label>
-              <select class="input" name="year" style="cursor:pointer">
-                <option value="">Select</option>
-                <option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option>
+              <label class="field-label">Year</label>
+              <select class="input" name="year">
+                <option value="">Select year</option>
+                <option>1st</option><option>2nd</option><option>3rd</option>
+                <option>4th</option><option>5th</option>
               </select>
             </div>
           </div>
+          <div style="margin-bottom:1rem">
+            <label class="field-label">Skills (comma separated)</label>
+            <input class="input" type="text" name="skills" placeholder="Python, React, Machine Learning"/>
+          </div>
         </div>
-        <!-- Alumni fields -->
+
+        <!-- Alumni-specific fields -->
         <div id="alumni-fields" style="display:none">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
             <div>
-              <label style="display:block;font-size:.75rem;color:#64748b;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em">Grad Year</label>
+              <label class="field-label">Grad Year</label>
               <input class="input" type="number" name="grad_year" placeholder="2022" min="2000" max="2030"/>
             </div>
             <div>
-              <label style="display:block;font-size:.75rem;color:#64748b;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em">Company</label>
+              <label class="field-label">Company</label>
               <input class="input" type="text" name="company" placeholder="Google"/>
             </div>
           </div>
           <div style="margin-bottom:1rem">
-            <label style="display:block;font-size:.75rem;color:#64748b;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em">Job Role</label>
+            <label class="field-label">Job Title</label>
             <input class="input" type="text" name="job_role" placeholder="Software Engineer"/>
           </div>
+          <div style="margin-bottom:1rem">
+            <label class="field-label">Skills</label>
+            <input class="input" type="text" name="skills" placeholder="Python, System Design, Cloud"/>
+          </div>
         </div>
-        <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:.875rem;font-size:1rem;margin-top:.5rem">Create Account</button>
+
+        <div style="margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:.625rem">
+          <input type="checkbox" id="tos" name="tos" required
+            style="width:1.125rem;height:1.125rem;accent-color:var(--brand);margin-top:.125rem;flex-shrink:0"/>
+          <label for="tos" style="font-size:.8rem;color:var(--text-lo);line-height:1.5">
+            I agree to the <a href="#" style="color:#85a8ff;text-decoration:none">Terms of Service</a> and
+            <a href="#" style="color:#85a8ff;text-decoration:none">Privacy Policy</a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submit-btn"
+          style="width:100%;padding:.875rem;font-size:.95rem">
+          Create Account
+        </button>
       </form>
-      <p style="text-align:center;font-size:.875rem;color:#64748b;margin-top:1.5rem">
-        Already have an account? <a href="/login" style="color:#90aeff;text-decoration:none;font-weight:500">Sign in</a>
+
+      <p style="text-align:center;font-size:.875rem;color:var(--text-lo);margin-top:1.5rem">
+        Already have an account?
+        <a href="/login" style="color:#85a8ff;text-decoration:none;font-weight:600">Sign in →</a>
       </p>
     </div>
   </div>
 </div>
+
+<style>
+.field-label {
+  display: block;
+  font-family: 'Syne', sans-serif;
+  font-size: .72rem; font-weight: 700;
+  color: var(--text-lo);
+  margin-bottom: .375rem;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+</style>
 <script>
-function setRole(r){
-  document.getElementById('role-input').value=r;
-  const bs=document.getElementById('btn-student'), ba=document.getElementById('btn-alumni');
-  const sf=document.getElementById('student-fields'), af=document.getElementById('alumni-fields');
-  if(r==='student'){
-    bs.style.background='#3355ff'; bs.style.color='#fff';
-    ba.style.background='none'; ba.style.color='#64748b';
-    sf.style.display='block'; af.style.display='none';
+const role = '{{ request.args.get("role","student") }}';
+function setRole(r) {
+  document.getElementById('role-input').value = r;
+  const bs = document.getElementById('btn-student');
+  const ba = document.getElementById('btn-alumni');
+  const sf = document.getElementById('student-fields');
+  const af = document.getElementById('alumni-fields');
+  if (r === 'student') {
+    bs.style.cssText += ';background:var(--brand);color:#fff;';
+    ba.style.cssText += ';background:none;color:var(--text-lo);';
+    sf.style.display = '';
+    af.style.display = 'none';
   } else {
-    ba.style.background='#3355ff'; ba.style.color='#fff';
-    bs.style.background='none'; bs.style.color='#64748b';
-    af.style.display='block'; sf.style.display='none';
+    ba.style.cssText += ';background:var(--brand);color:#fff;';
+    bs.style.cssText += ';background:none;color:var(--text-lo);';
+    af.style.display = '';
+    sf.style.display = 'none';
   }
 }
-const p=new URLSearchParams(location.search);
-if(p.get('role')==='alumni') setRole('alumni');
+// Set initial role from URL param
+if (role === 'alumni') setRole('alumni');
 </script>
 {% endblock %}

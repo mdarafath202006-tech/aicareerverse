@@ -1,1 +1,1 @@
-"""app/routes — Flask blueprints"""
+# routes package

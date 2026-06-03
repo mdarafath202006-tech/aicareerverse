@@ -1,44 +1,123 @@
 {% extends "layout_dash.html" %}
-{% block title %}My Profile — Student{% endblock %}
+{% block title %}My Profile — AI CareerVerse{% endblock %}
+{% block page_title %}My Profile{% endblock %}
 {% block content %}
-<div style="padding:1.5rem;max-width:40rem;margin:0 auto">
-  <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.5rem;color:#fff;margin-bottom:1.5rem">👤 My Profile</h1>
-  <div class="card" style="padding:1.5rem">
-    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid #172040">
-      <div style="width:4rem;height:4rem;border-radius:1rem;background:linear-gradient(135deg,#3355ff,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.5rem;box-shadow:0 0 20px rgba(51,85,255,.4)">
-        {{ session.get('name','U')[0].upper() }}
+<div style="padding:1.75rem;max-width:68rem;margin:0 auto">
+  <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#f1f5f9;margin-bottom:2rem">
+    My Profile
+  </h1>
+
+  <div style="display:grid;grid-template-columns:1fr 1.8fr;gap:1.5rem">
+
+    <!-- Left: Profile card -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem">
+      <div class="card" style="padding:1.5rem;text-align:center">
+        <div class="avatar" style="width:5rem;height:5rem;font-size:1.75rem;margin:0 auto 1rem;
+          box-shadow:0 0 32px rgba(26,82,255,.35)">
+          {{ session.get('name','U')[0].upper() }}
+        </div>
+        <h2 style="font-family:'Syne',sans-serif;font-weight:800;color:#f1f5f9;font-size:1.125rem;margin-bottom:.25rem">
+          {{ session.get('name','') }}
+        </h2>
+        <p style="font-size:.8rem;color:var(--text-lo);margin-bottom:.875rem">
+          {{ profile.get('department','') }}{% if profile.get('year') %} · {{ profile.get('year') }} Year{% endif %}
+        </p>
+        <span class="badge badge-brand">Student</span>
+
+        <div class="divider" style="margin:1.25rem 0"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;text-align:center">
+          {% for label,val in [('Connections','128'),('Posts','24'),('Mentors',profile.get('mentors',4)),('Achievements','12')] %}
+          <div>
+            <p style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:#f1f5f9">{{ val }}</p>
+            <p style="font-size:.72rem;color:var(--text-lo);text-transform:uppercase;letter-spacing:.06em">{{ label }}</p>
+          </div>
+          {% endfor %}
+        </div>
       </div>
-      <div>
-        <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;font-size:1.125rem">{{ session.get('name','') }}</p>
-        <p style="font-size:.875rem;color:#64748b">Student</p>
+
+      <!-- Links -->
+      {% if profile.get('github_url') or profile.get('linkedin_url') %}
+      <div class="card" style="padding:1.25rem">
+        <p class="section-label">Links</p>
+        {% if profile.get('github_url') %}
+        <a href="{{ profile.get('github_url') }}" target="_blank" style="display:flex;align-items:center;gap:.625rem;
+          color:var(--text-mid);text-decoration:none;font-size:.85rem;padding:.5rem;
+          border-radius:var(--radius-sm);transition:color .2s"
+          onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color=''">
+          🐙 GitHub
+        </a>
+        {% endif %}
+        {% if profile.get('linkedin_url') %}
+        <a href="{{ profile.get('linkedin_url') }}" target="_blank" style="display:flex;align-items:center;gap:.625rem;
+          color:var(--text-mid);text-decoration:none;font-size:.85rem;padding:.5rem;
+          border-radius:var(--radius-sm);transition:color .2s"
+          onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color=''">
+          💼 LinkedIn
+        </a>
+        {% endif %}
       </div>
+      {% endif %}
     </div>
-    <form method="POST" action="/student/profile">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
-      <div style="margin-bottom:1rem">
-        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Skills <span style="text-transform:none;letter-spacing:0;color:#334155">(comma separated)</span></label>
-        <textarea name="skills" class="input" style="height:5rem;resize:none" placeholder="Python, React, Machine Learning, SQL...">{{ profile.get('skills','') }}</textarea>
-      </div>
-      <div style="margin-bottom:1rem">
-        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Interests</label>
-        <textarea name="interests" class="input" style="height:5rem;resize:none" placeholder="AI, Web Development, Data Science...">{{ profile.get('interests','') }}</textarea>
-      </div>
-      <div style="margin-bottom:1rem">
-        <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">Bio</label>
-        <textarea name="bio" class="input" style="height:7rem;resize:none" placeholder="Tell mentors about yourself..." maxlength="1000">{{ profile.get('bio','') }}</textarea>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem">
-        <div>
-          <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">GitHub URL</label>
-          <input type="url" name="github_url" class="input" placeholder="https://github.com/..." value="{{ profile.get('github_url','') }}"/>
+
+    <!-- Right: Edit form -->
+    <div class="card" style="padding:1.75rem">
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;color:#f1f5f9;margin-bottom:1.5rem;font-size:1rem">
+        Edit Profile
+      </h3>
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div>
+            <label class="field-label">Department</label>
+            <input class="input" name="department" value="{{ profile.get('department','') }}" placeholder="Computer Science"/>
+          </div>
+          <div>
+            <label class="field-label">Year</label>
+            <select class="input" name="year">
+              {% for y in ['1st','2nd','3rd','4th','5th'] %}
+              <option {% if profile.get('year')==y %}selected{% endif %}>{{ y }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
-        <div>
-          <label style="display:block;font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem">LinkedIn URL</label>
-          <input type="url" name="linkedin_url" class="input" placeholder="https://linkedin.com/in/..." value="{{ profile.get('linkedin_url','') }}"/>
+        <div style="margin-bottom:1rem">
+          <label class="field-label">Skills (comma separated)</label>
+          <input class="input" name="skills" value="{{ profile.get('skills','') }}" placeholder="Python, React, Machine Learning, SQL"/>
         </div>
-      </div>
-      <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:.875rem">💾 Save Profile</button>
-    </form>
+        <div style="margin-bottom:1rem">
+          <label class="field-label">Interests</label>
+          <input class="input" name="interests" value="{{ profile.get('interests','') }}" placeholder="AI, Product Management, Startups"/>
+        </div>
+        <div style="margin-bottom:1rem">
+          <label class="field-label">Bio</label>
+          <textarea class="input" name="bio" rows="3" placeholder="Tell the community about yourself...">{{ profile.get('bio','') }}</textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div>
+            <label class="field-label">GitHub URL</label>
+            <input class="input" name="github_url" value="{{ profile.get('github_url','') }}" placeholder="https://github.com/you"/>
+          </div>
+          <div>
+            <label class="field-label">LinkedIn URL</label>
+            <input class="input" name="linkedin_url" value="{{ profile.get('linkedin_url','') }}" placeholder="https://linkedin.com/in/you"/>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:.875rem;margin-top:1.5rem">
+          <button type="reset" class="btn btn-ghost">Reset</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
+
+<style>
+.field-label {
+  display: block; font-family:'Syne',sans-serif;
+  font-size:.72rem; font-weight:700; color:var(--text-lo);
+  margin-bottom:.375rem; text-transform:uppercase; letter-spacing:.08em;
+}
+textarea.input { resize:vertical; min-height:5rem; }
+</style>
 {% endblock %}
