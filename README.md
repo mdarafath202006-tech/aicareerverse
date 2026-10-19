@@ -2,6 +2,24 @@
 
 > The AI-powered career ecosystem connecting students with alumni, mentors, and opportunities.
 
+## AlumniConnect consolidation
+
+AI CareerVerse is the single home for the alumni-network functionality. The standalone AlumniConnect project overlaps with this platform, so its capabilities should be maintained here rather than developed twice.
+
+| AlumniConnect capability | AI CareerVerse implementation |
+|---|---|
+| AI mentor recommendations (semantic similarity, skills, industry fit) | `app/ai/recommender.py` |
+| Student/alumni profiles and mentor requests | `app/models/alumni.py`, `app/routes/alumni.py`, `app/routes/student.py` |
+| Real-time student–alumni chat and online presence | `app/services/chat.py`, Flask-SocketIO setup in `app/__init__.py` |
+| Career and placement analytics | `app/routes/analytics.py`, `app/ai/recommender.py` |
+| REST API for recommendations, alumni, analytics, and skill-gap analysis | `app/api/routes.py` |
+| Skill-gap analysis and learning guidance | `app/ai/recommender.py`, `app/routes/ai_routes.py` |
+| Secure authentication, validation, CSRF protection, and rate limiting | `app/auth/`, `app/utils/`, `app/__init__.py` |
+| Communities, social feed, referrals, company pages, and career knowledge base | `app/routes/` and corresponding models/templates |
+| Docker-based local deployment and CI checks | `Dockerfile`, `docker-compose.yml`, `.github/workflows/` |
+
+**Consolidation rule:** add future alumni-network improvements to AI CareerVerse and avoid maintaining duplicate implementations in a separate repository. Before archiving the old repository, verify that any unique commits, configuration, or deployment secrets have been migrated; secrets should be rotated rather than copied into source control.
+
 ---
 
 ## 📋 Table of Contents
