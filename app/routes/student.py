@@ -127,47 +127,6 @@ def request_mentor(alumni_id):
     return redirect(request.referrer or url_for("student.recommendations"))
 
 
-@student_bp.route("/mentorship")
-@login_required
-@role_required("student")
-def mentorship():
-    from app.models import MentorshipRequest, Alumni, User
-    student = StudentRepository.get_by_user_id(session["user_id"])
-    if not student:
-        return redirect(url_for("student.dashboard"))
-    rows = (
-        MentorshipRequest.query
-        .filter_by(student_id=student.id)
-        .order_by(MentorshipRequest.created_at.desc())
-        .all()
-    )
-    from app.models.base import db
-    requests_data = []
-    for req in rows:
-        d = req.to_dict()
-        alum_profile = Alumni.query.get(req.alumni_id)
-        alum_user    = User.query.get(alum_profile.user_id) if alum_profile else None
-        d["alumni_name"]    = alum_user.name    if alum_user    else "Unknown"
-        d["alumni_company"] = alum_profile.company  if alum_profile else ""
-        d["alumni_role"]    = alum_profile.job_role if alum_profile else ""
-        d["alumni_id"]      = req.alumni_id
-        requests_data.append(d)
-    return render_template("student/mentorship.html", requests=requests_data)
-
-
-@student_bp.route("/search")
-@login_required
-@role_required("student")
-def search():
-    query   = (request.args.get("q")   or "")[:100]
-    skill   = (request.args.get("skill")   or "")[:100]
-    company = (request.args.get("company") or "")[:100]
-    results = AlumniRepository.search(query=query, skill=skill, company=company)
-    return render_template("student/search.html",
-                           results=results, query=query,
-                           skill=skill, company=company)
-
-
 @student_bp.route("/search")
 @login_required
 @role_required("student")
